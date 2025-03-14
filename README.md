@@ -20,7 +20,7 @@ install.packages('rdhte')
 
 - Replication: [R-script](https://github.com/rdpackages/rdhte/blob/main/R/rdhte_illustration.r), [rdplot illustration](https://github.com/rdpackages/rdhte/blob/main/R/rdhte_plot_illustration.R), [senate data](https://github.com/rdpackages/rdhte/blob/main/R/rdhte_senate.csv).
 
-## Stata Implementation
+## Stata Implementation (Coming Soon)
 
 To install/update in Stata type:
 ```
