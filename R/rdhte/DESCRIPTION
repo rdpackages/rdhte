@@ -1,0 +1,29 @@
+Package: rdhte
+Title: Heterogeneous Treatment Effects in Regression Discontinuity Designs
+Version: 0.0.1
+Authors@R: c(person(given = c("Sebastian"),
+                      family = "Calonico",
+                      role = c("aut", "cre"),
+                      email = "scalonico@ucdavis.edu"),
+               person(given = c("Matias", "D."),
+                      family = "Cattaneo",
+                      role = "aut",
+                      email = "cattaneo@princeton.edu"),
+               person(given = c("Max", "H."),
+                      family = "Farrell",
+                      role = "aut",
+                      email = "maxhfarrell@ucsb.edu"),
+               person(given = "Filippo",
+                      family = "Palomba",
+                      role = "aut",
+                      email = "fpalomba@princeton.edu"),
+               person(given = "Rocio",
+                      family = "Titiunik",
+                      role = "aut",
+                      email = "titiunik@princeton.edu"))
+Description: Understanding heterogeneous causal effects based on pretreatment covariates is a crucial step in modern empirical work in data science. Building on the recent developments in Calonico et al (2025) <https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Palomba-Titiunik_2025_HTERD.pdf>, this package provides tools for estimation and inference of heterogeneous treatment effects in Regression Discontinuity (RD) Designs. The package includes two main commands: 'rdhte' to conduct estimation and robust bias-corrected inference for conditional RD treatment effects (given choice of bandwidth parameter); and 'rdbwhte', which implements automatic bandwidth selection methods.
+License: GPL-2
+Imports: rdrobust, sandwich
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
