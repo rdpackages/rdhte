@@ -59,7 +59,7 @@
 #' @references
 #' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): rdhte: Learning Conditional Average Treatment Effects in RD Designs. \emph{Working paper}.
 #'
-#' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): Heterogenous Treatment Effects in Regression Discontinuity Designs. \emph{Working paper}
+#' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): Treatment Effect Heterogeneity in Regression Discontinuity Designs. \emph{Working paper}
 #'
 #' @seealso \code{\link{rdbwhte}}
 #'
@@ -137,8 +137,8 @@ rdhte <- function(y, x, c = 0, covs.hte = NULL, covs.eff = NULL, p = 1, kernel =
       reg_formula_est <- Y ~ T * Xp0
       reg_formula_inf <- Y ~ T * Xp1
     } else {
-      reg_formula_est <- Y ~ T * Xp0 * W + covs
-      reg_formula_inf <- Y ~ T * Xp1 * W + covs
+      reg_formula_est <- Y ~ T * Xp0 * W + covs * W
+      reg_formula_inf <- Y ~ T * Xp1 * W + covs * W
     }
 
     # Run a single regression model with weights

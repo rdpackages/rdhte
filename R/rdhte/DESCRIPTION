@@ -1,6 +1,6 @@
 Package: rdhte
 Title: Heterogeneous Treatment Effects in Regression Discontinuity Designs
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(person(given = c("Sebastian"),
                       family = "Calonico",
                       role = c("aut", "cre"),

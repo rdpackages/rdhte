@@ -47,7 +47,7 @@
 #' @references
 #' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): rdhte: Learning Conditional Average Treatment Effects in RD Designs. \emph{Working paper}.
 #'
-#' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): Heterogenous Treatment Effects in Regression Discontinuity Designs. \emph{Working paper}
+#' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): Treatment Effect Heterogeneity in Regression Discontinuity Designs. \emph{Working paper}
 #'
 #' @seealso \code{\link{rdbwhte}}
 #' @examples
