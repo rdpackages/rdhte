@@ -3,12 +3,12 @@
 ** Do-file for Empirical Illustration 
 ** Authors: Sebastian Calonico, Matias D. Cattaneo, Max H. Farrell, Filippo Palomba and Rocio Titiunik 
 ********************************************************************************
-** hlp2winpdf, cdn(rdrobust) replace
-** hlp2winpdf, cdn(rdbwselect) replace
-** hlp2winpdf, cdn(rdplot) replace
+** hlp2winpdf, cdn(rdhte) replace
+** hlp2winpdf, cdn(rdbwhte) replace
+** hlp2winpdf, cdn(rdhte_lincom) replace
 ********************************************************************************
 ** net install rdrobust, from(https://raw.githubusercontent.com/rdpackages/rdrobust/master/stata) replace
-** net install rdhte, from(https://raw.githubusercontent.com/rdpackages/rdrobust/main/stata) replace
+** net install rdhte, from(https://raw.githubusercontent.com/rdpackages/rdhte/main/stata) replace
 ********************************************************************************
 
 clear all
