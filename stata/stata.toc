@@ -1,0 +1,6 @@
+v 3
+d RDHTE: Estimation and Inference for Heterogeneous Treatment Effects in Regression Discontinuity Designs.
+d           https://rdpackages.github.io/rdhte
+d
+
+p rdhte
