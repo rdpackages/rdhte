@@ -38,9 +38,16 @@
 #' @importFrom stats pnorm
 #' @importFrom stats qnorm
 #' @importFrom stats model.matrix
-#'
+#' @importFrom stats pchisq
+#' @importFrom stats pf
+#' @importFrom stats pt
+#' @importFrom stats qt
+#' @importFrom stats setNames
+#' @importFrom stats as.formula 
+#' @importFrom stats confint
 #' @import rdrobust
 #' @import sandwich
+#' @import multcomp
 #'
 #' @aliases rdhte-package
 "_PACKAGE"

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rdbwhte.R
 \name{rdbwhte}
 \alias{rdbwhte}
-\title{MSE-Optimal Bandwidth Selection for RD Heterogeneous Treatment
+\title{Data-Driven Optimal Bandwidth Selection for RD Heterogeneous Treatment
 Effects Estimation}
 \usage{
 rdbwhte(
@@ -12,9 +12,11 @@ rdbwhte(
   covs.hte = NULL,
   covs.eff = NULL,
   p = 1,
+  q = 2,
   kernel = "tri",
   vce = "hc3",
   cluster = NULL,
+  bwselect = "mserd",
   bw.joint = FALSE
 )
 }
@@ -23,40 +25,58 @@ rdbwhte(
 
 \item{x}{Running variable.}
 
-\item{c}{Cutoff value (default = 0).}
+\item{c}{RD cutoff in \code{x}; default is \code{c = 0}.}
 
-\item{covs.hte}{Covariate(s) for heterogeneous treatment effects (required).}
+\item{covs.hte}{covariates for heterogeneous treatment effects. Factor variables can be used to distinguish between continuous and categorical variables, select reference categories, specify interactions between variables, and include polynomials of continuous variables.}
 
-\item{covs.eff}{Additional covariates for efficiency (optional).}
+\item{covs.eff}{additional covariates to be used for efficiency improvements.}
 
-\item{p}{Polynomial order (default = 1).}
+\item{p}{order of the local polynomial used to construct the point estimator (default = 1).}
 
-\item{kernel}{Kernel type (default = "tri").}
+\item{q}{order of the local polynomial used to construct the bias correction  (default = 2).}
 
-\item{vce}{Variance estimator (default = "hc3").}
+\item{kernel}{kernel function used to construct the RD estimators. Options are \code{triangular} (default option), \code{epanechnikov} and \code{uniform}.}
 
-\item{cluster}{Optional cluster variable.}
+\item{vce}{character string specifying the variance-covariance matrix estimator type (hc0–hc3) (default = "hc3").}
 
-\item{bw.joint}{Logical, use joint bandwidth selection (default = FALSE).}
+\item{cluster}{variable indicating the clustering of observations.}
+
+\item{bwselect}{bandwidth selection procedure to be used.
+Options are:
+\code{mserd} one common MSE-optimal bandwidth selector for the RD treatment effect estimator.
+\code{msetwo} two different MSE-optimal bandwidth selectors (below and above the cutoff) for the RD treatment effect estimator.
+\code{msesum} one common MSE-optimal bandwidth selector for the sum of regression estimates (as opposed to difference thereof).
+\code{msecomb1} for min(\code{mserd},\code{msesum}).
+\code{msecomb2} for median(\code{msetwo},\code{mserd},\code{msesum}), for each side of the cutoff separately.
+\code{cerrd} one common CER-optimal bandwidth selector for the RD treatment effect estimator.
+\code{certwo} two different CER-optimal bandwidth selectors (below and above the cutoff) for the RD treatment effect estimator.
+\code{cersum} one common CER-optimal bandwidth selector for the sum of regression estimates (as opposed to difference thereof).
+\code{cercomb1} for min(\code{cerrd},\code{cersum}).
+\code{cercomb2} for median(\code{certwo},\code{cerrd},\code{cersum}), for each side of the cutoff separately.
+Note: MSE = Mean Square Error; CER = Coverage Error Rate. Default is \code{bwselect=mserd}.}
+
+\item{bw.joint}{logical. If \code{TRUE}, forces all bandwidths to be the same across groups (default is \code{bw.joint = FALSE}).}
 }
 \value{
 A list with selected bandwidths and model information.
-\item{W_lev}{vector of group level identifiers.}
+\item{W.lev}{vector of group level identifiers.}
 \item{kernel}{kernel type used.}
 \item{vce}{variance estimator used.}
 \item{c}{cutoff value.}
 \item{h}{vector containing the bandwidths used.}
-\item{p}{order of the polynomial used for estimation of the regression function.}
+\item{p}{order of the polynomial used for estimation.}
+\item{q}{order of the polynomial used for inference.}
 \item{N}{vector with the original number of observations for each group.}
 \item{Nh}{vector with the effective number of observations for each group.}
-\item{coef_report}{internal value.}
+\item{covs.cont}{internal value.}
 \item{rdmodel}{rd model.}
 }
 \description{
-\code{rdbwhte} computes MSE-optimal bandwidths for estimating
+\code{rdbwhte} computes MSE- and CER-optimal bandwidths for estimating
 RD heterogeneous treatment effects based on covariates.
 
-Companion commands: \code{\link{rdhte}} for RD HTE estimation and inference.
+Companion commands: \code{\link{rdhte}} for RD HTE estimation and inference,
+and \code{\link{rdhte_lincom}} for testing linear restrictions of parameters.
 
 Related Stata and R packages useful for inference in RD designs are
 described in the website: \url{https://rdpackages.github.io/}.
@@ -76,7 +96,7 @@ Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): rdhte: Learning Condit
 Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): Treatment Effect Heterogeneity in Regression Discontinuity Designs. \emph{Working paper}
 }
 \seealso{
-\code{\link{rdbwhte}}
+\code{\link{rdhte}}, \code{\link{rdhte_lincom}}
 }
 \author{
 Sebastian Calonico, University of California, Davis \email{scalonico@ucdavis.edu}.

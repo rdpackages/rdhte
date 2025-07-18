@@ -11,12 +11,18 @@ rdhte(
   covs.hte = NULL,
   covs.eff = NULL,
   p = 1,
+  q = 2,
   kernel = "tri",
+  weights = NULL,
   h = NULL,
+  h.l = NULL,
+  h.r = NULL,
   vce = "hc3",
   cluster = NULL,
   level = 95,
-  bw.joint = FALSE
+  bwselect = NULL,
+  bw.joint = FALSE,
+  subset = NULL
 )
 }
 \arguments{
@@ -24,75 +30,116 @@ rdhte(
 
 \item{x}{Running variable.}
 
-\item{c}{Cutoff value (default = 0).}
+\item{c}{RD cutoff in \code{x}; default is \code{c = 0}.}
 
-\item{covs.hte}{Covariate(s) for heterogeneous treatment effects (required).}
+\item{covs.hte}{covariates for heterogeneous treatment effects. Factor variables can be used to distinguish between continuous and categorical variables, select reference categories, specify interactions between variables, and include polynomials of continuous variables.
+If not specified, the RD Average Treatment Effect is computed.}
 
-\item{covs.eff}{Additional covariates for efficiency (optional).}
+\item{covs.eff}{additional covariates to be used for efficiency improvements.}
 
-\item{p}{Polynomial order (default = 1).}
+\item{p}{order of the local polynomial used to construct the point estimator (default = 1).}
 
-\item{kernel}{Kernel type (default = "tri").}
+\item{q}{order of the local polynomial used to construct the bias correction  (default = 2).}
 
-\item{h}{Choice of bandwidth (optional).}
+\item{kernel}{kernel function used to construct the RD estimators. Options are \code{triangular} (default option), \code{epanechnikov} and \code{uniform}.}
 
-\item{vce}{Variance estimator (default = "hc3").}
+\item{weights}{variable used for optional weighting of the estimation procedure. The unit-specific weights multiply the kernel function.}
 
-\item{cluster}{Optional cluster variable.}
+\item{h}{main bandwidth used to construct the RD estimator. If not specified, bandwidth \code{h} is computed by the companion command \code{\link{rdbwhte}}. More than one bandwidth can be specified for categorical covariates.}
 
-\item{level}{Confidence level (default = 95).}
+\item{h.l}{same as \code{h}, but only used for observations left of the cutoff \code{c}.}
 
-\item{bw.joint}{Logical, use joint bandwidth selection (default = FALSE).}
+\item{h.r}{same as \code{h}, but only used for observations right of the cutoff \code{c}.}
+
+\item{vce}{character string specifying the variance-covariance matrix estimator type (hc0–hc3) (default = "hc3").
+It is based on the \code{R} function \code{\link[sandwich]{vcovCL}}.}
+
+\item{cluster}{variable indicating the clustering of observations.}
+
+\item{level}{confidence level for confidence intervals; default is \code{level = 95}.}
+
+\item{bwselect}{bandwidth selection procedure to be used.
+Options are:
+\code{mserd} one common MSE-optimal bandwidth selector for the RD treatment effect estimator.
+\code{msetwo} two different MSE-optimal bandwidth selectors (below and above the cutoff) for the RD treatment effect estimator.
+\code{msesum} one common MSE-optimal bandwidth selector for the sum of regression estimates (as opposed to difference thereof).
+\code{msecomb1} for min(\code{mserd},\code{msesum}).
+\code{msecomb2} for median(\code{msetwo},\code{mserd},\code{msesum}), for each side of the cutoff separately.
+\code{cerrd} one common CER-optimal bandwidth selector for the RD treatment effect estimator.
+\code{certwo} two different CER-optimal bandwidth selectors (below and above the cutoff) for the RD treatment effect estimator.
+\code{cersum} one common CER-optimal bandwidth selector for the sum of regression estimates (as opposed to difference thereof).
+\code{cercomb1} for min(\code{cerrd},\code{cersum}).
+\code{cercomb2} for median(\code{certwo},\code{cerrd},\code{cersum}), for each side of the cutoff separately.
+Note: MSE = Mean Square Error; CER = Coverage Error Rate. Default is \code{bwselect=mserd}.}
+
+\item{bw.joint}{logical. If \code{TRUE}, forces all bandwidths to be the same across groups (default is \code{bw.joint = FALSE}).}
+
+\item{subset}{optional vector specifying a subset of observations to be used.}
 }
 \value{
 A list with selected RD HTE effects and model information.
 \item{Estimate}{vector of conventional local-polynomial RD estimates.}
-\item{Estimate_bc}{vector of bias-corrected local-polynomial RD estimates.}
-\item{se_rb}{vector containing robust bias corrected standard errors of the local-polynomial RD estimates.}
-\item{ci_rb}{matrix containing robust bias corrected confidence intervals.}
-\item{t_rb}{vector containing the t-statistics associated with robust local-polynomial RD estimates.}
-\item{pv_rb}{vector containing the p-values associated with robust local-polynomial RD estimates.}
+\item{Estimate.bc}{vector of bias-corrected local-polynomial RD estimates.}
+\item{se.rb}{vector containing robust bias corrected standard errors of the local-polynomial RD estimates.}
+\item{ci.rb}{matrix containing robust bias corrected confidence intervals.}
+\item{t.rb}{vector containing the t-statistics associated with robust local-polynomial RD estimates.}
+\item{pv.rb}{vector containing the p-values associated with robust local-polynomial RD estimates.}
 \item{coefs}{vector containing the coefficients for the jointly estimated p-th order local polynomial model.}
 \item{vcov}{estimated variance-covariance matrix.}
-\item{W_lev}{vector of group level identifiers.}
+\item{W.lev}{vector of group level identifiers.}
 \item{kernel}{kernel type used.}
 \item{vce}{variance estimator used.}
 \item{c}{cutoff value.}
 \item{h}{vector containing the bandwidths used.}
 \item{p}{order of the polynomial used for estimation of the regression function.}
+\item{q}{order of the polynomial used for inference on the regression function.}
 \item{N}{vector with the original number of observations for each group.}
 \item{Nh}{vector with the effective number of observations for each group.}
-\item{coef_report}{internal value.}
+\item{covs.cont}{internal value.}
 \item{level}{confidence level used.}
 \item{rdmodel}{rd model.}
 }
 \description{
 \code{rdhte} provides estimation and inference for heterogeneous
-treatment effects in RDD using local polynomial regression
-allowing for interactions with pretreatment covariates.
-Inference is implemented using robust bias-correction methods.
+treatment effects in RD designs using local polynomial regressions,
+allowing for interactions with pretreatment covariates
+(Calonico, Cattaneo, Farrell, Palomba and Titiunik, 2025a).
+Inference is implemented using robust bias-correction methods
+(Calonico, Cattaneo, and Titiunik, 2014)
 
-Companion commands: \code{\link{rdbwhte}} for data-driven bandwidth selection.
+Companion commands: \code{\link{rdbwhte}} for data-driven bandwidth selection
+and \code{\link{rdhte_lincom}} for testing linear restrictions of parameters.
 
-Related Stata and R packages useful for inference in RD designs are described
-in the website: \url{https://rdpackages.github.io/}.
+Related software packages for analysis and interpretation of RD designs and
+related methods are available in: \url{https://rdpackages.github.io/}.
+
+For background methodology, see Calonico, Cattaneo, Farrell, and Titiunik
+(2019), Calonico, Cattaneo and Farrell (2020), Cattaneo and Titiunik (2022).
 }
 \examples{
 set.seed(123)
-n <- 5000
+n <- 1000
 X <- runif(n, -1, 1)
 W <- rbinom(n, 1, 0.5)
 Y <- 3 + 2*X + 1.5*X^2 + 0.5*X^3 + sin(2*X) + 3*W*(X>=0) + rnorm(n)
-rdhte.1 = rdhte(y=Y, x=X, covs.hte=factor(W))
-summary(rdhte.1)
+m1 = rdhte(y = Y, x = X, covs.hte = factor(W))
+summary(m1)
 }
 \references{
-Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): rdhte: Learning Conditional Average Treatment Effects in RD Designs. \emph{Working paper}.
+Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): \href{https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Palomba-Titiunik_2025_Stata.pdf}{rdhte: Learning Conditional Average Treatment Effects in RD Designs.} \emph{Working paper}.
 
-Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): Treatment Effect Heterogeneity in Regression Discontinuity Designs. \emph{Working paper}
+Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): \href{https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Palomba-Titiunik_2025_HTERD.pdf}{Treatment Effect Heterogeneity in Regression Discontinuity Designs.} \emph{Working paper}.
+
+Cattaneo, Farrell, and Titiunik. 2022. \href{https://rdpackages.github.io/references/Cattaneo-Titiunik_2022_ARE.pdf}{Regression Discontinuity Designs.} \emph{Annual Review of Economics},  14: 821-851.
+
+Calonico, Cattaneo, and Farrell. 2020. \href{https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell_2020_ECTJ.pdf}{Optimal Bandwidth Choice for Robust Bias Corrected Inference in Regression Discontinuity Designs.} \emph{Econometrics Journal}, 23(2): 192-210.
+
+Calonico, Cattaneo, Farrell, and Titiunik. 2019. \href{https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Titiunik_2019_RESTAT.pdf}{Regression Discontinuity Designs using Covariates.} \emph{Review of Economics and Statistics}, 101(3): 442-451.
+
+Calonico, Cattaneo, and Titiunik. 2014a. \href{https://rdpackages.github.io/references/Calonico-Cattaneo-Titiunik_2014_ECMA.pdf}{Robust Nonparametric Confidence Intervals for Regression-Discontinuity Designs.} \emph{Econometrica} 82(6): 2295-2326.
 }
 \seealso{
-\code{\link{rdbwhte}}
+\code{\link{rdbwhte}}, \code{\link{rdhte_lincom}}
 }
 \author{
 Sebastian Calonico, University of California, Davis \email{scalonico@ucdavis.edu}.

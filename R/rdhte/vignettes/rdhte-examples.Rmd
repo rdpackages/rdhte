@@ -1,0 +1,70 @@
+---
+title: "rdhte-examples"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{rdhte-examples}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+rm(list=ls(all=TRUE))
+setwd("/Users/sebastian/AdiLab Dropbox/Sebastian Calonico/2025/")
+#library(rdhte)
+#library(rdrobust)
+library("sandwich")
+library(multcomp)
+
+source("RD-HTE/R/package/rdhte/R/rdhte.R")
+source("RD-HTE/R/package/rdhte/R/rdbwhte.R")
+source("RD-HTE/R/package/rdhte/R/rdhte_lincom.R")
+
+source("updates/rdrobust/R/rdrobust/R/rdrobust.R")
+source("updates/rdrobust/R/rdrobust/R/rdbwselect.R")
+source("updates/rdrobust/R/rdrobust/R/rdplot.R")
+source("updates/rdrobust/R/rdrobust/R/functions.R")
+
+data = read.csv("RD-HTE/R/test.csv")
+attach(data)
+
+### Case 1: one subgroup variable W2.
+m1 <- rdhte(y = Y2, x = X, covs.hte = factor(W2))
+summary(m1)
+linfct <- c("`factor(W2)2` - `factor(W2)3` = 0", "`factor(W2)2` = 0")
+rdhte_lincom(model = m1, linfct = linfct)
+
+# Case 3: one continuous variable W3.
+m2 <- rdhte(y = Y3, x = X, covs.hte = W3)
+summary(m2)
+linfct <- c("T - T:W3 = 0")
+rdhte_lincom(model = m2, linfct = linfct)
+
+# Case 3: two (or more) subgroup variables:
+m3 <- rdhte(y = Y2, x = X, covs.hte = factor(W2):factor(W1))
+summary(m3)
+linfct <- c("`factor(W2):factor(W1)1:0` - `factor(W2):factor(W1)1:1`= 0")
+rdhte_lincom(model = m3, linfct = linfct)
+
+# Case 4: two (or more) continuous variables (this includes polynomials)
+m4 <- rdhte(y = Y3, x = X, covs.hte = "W2 + W3")
+summary(m4)
+linfct <- c("T:W2 - T:W3 = 0")
+rdhte_lincom(model = m4, linfct = linfct)
+
+# Case 5: interaction between continous and subgroup varibles.
+m5 <- rdhte(y = Y3, x = X, covs.hte = "W3*factor(W1)")
+summary(m5)
+linfct <- c("T:W3.factor.W1.1 = 0")
+rdhte_lincom(model = m5, linfct = linfct)
+
+# Format: cases 1-3 can be either a formula or a expression. Cases 4-5 it only work as a formula, thus they need to be included in quotes. 
+# Note: some expression work either way, but with different interpretations. For example, W1 + W2 vs "W1 + W2".
+
+```
