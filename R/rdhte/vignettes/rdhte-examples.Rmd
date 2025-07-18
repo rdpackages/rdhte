@@ -16,23 +16,45 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 rm(list=ls(all=TRUE))
-setwd("/Users/sebastian/AdiLab Dropbox/Sebastian Calonico/2025/")
-#library(rdhte)
-#library(rdrobust)
-library("sandwich")
+library(rdhte)
+library(rdrobust)
+library(sandwich)
 library(multcomp)
 
-source("RD-HTE/R/package/rdhte/R/rdhte.R")
-source("RD-HTE/R/package/rdhte/R/rdbwhte.R")
-source("RD-HTE/R/package/rdhte/R/rdhte_lincom.R")
 
-source("updates/rdrobust/R/rdrobust/R/rdrobust.R")
-source("updates/rdrobust/R/rdrobust/R/rdbwselect.R")
-source("updates/rdrobust/R/rdrobust/R/rdplot.R")
-source("updates/rdrobust/R/rdrobust/R/functions.R")
+# Generate data
+set.seed(123)
+n <- 5000
+X <- runif(n, -1, 1) * 2  # Running variable in [-2,2]
+# Cluster variable (C) with 10 clusters
+C <- sample(1:10, n, replace = TRUE)  # categorical variable (e.g., region, firm)
 
-data = read.csv("RD-HTE/R/test.csv")
-attach(data)
+# Heterogeneity variables
+W1 <- rbinom(n, 1, 0.5)  # Binary variable (e.g., gender, policy group)
+W2 <- sample(1:3, n, replace = TRUE)  # W takes values 1, 2, or 3
+W3 <- runif(n, 0, 10)  # Continuous variable (e.g., income, age)
+
+# Define heterogeneous treatment effects
+tau_W1 <- 3 * W1  # The treatment effect depends on W
+tau_W2 <- ifelse(W2 == 1, 2, ifelse(W2 == 2, 4, 6))  # Treatment effect varies by W
+tau_W3 <- 2 + 0.5 * W3  # Treatment effect increases with W
+# Define heterogeneous treatment effects
+tau_W4 <- ifelse(W1 == 0 & W2 == 1, 2,  # Low education, male
+                ifelse(W1 == 0 & W2 == 2, 4,  # Medium education, male
+                       ifelse(W1 == 0 & W2 == 3, 6,  # High education, male
+                              ifelse(W1 == 1 & W2 == 1, 3,  # Low education, female
+                                     ifelse(W1 == 1 & W2 == 2, 5,  # Medium education, female
+                                            7)))))  # High education, female
+
+error_term <- rep(rnorm(10, 0, 1), length.out = n)  # Cluster-level errors
+epsilon <- error_term + rnorm(n)  # Add individual-level noise to the errors
+
+# Generate outcome variable with heterogeneous treatment effect at X = 0
+Y1 <- 3 + 2 * X + 1.5 * X^2 + 0.5 * X^3 + sin(2 * X) + tau_W1 * (X >= 0) + rnorm(n)  # Treatment effect = 3*W at cutoff
+Y2 <- 3 + 2 * X + 1.5 * X^2 + 0.5 * X^3 + sin(2 * X) + tau_W2 * (X >= 0) + rnorm(n)  # Treatment effect = tau_W at cutoff
+Y3 <- 3 + 2 * X + 1.5 * X^2 + 0.5 * X^3 + sin(2 * X) + tau_W3 * (X >= 0) + rnorm(n)
+Y4 <- 3 + 2 * X + 1.5 * X^2 + 0.5 * X^3 + sin(2 * X) + tau_W4 * (X >= 0) + rnorm(n)
+Y5 <- 3 + 2 * X + 1.5 * X^2 + 0.5 * X^3 + sin(2 * X) + tau_W2 * (X >= 0) + epsilon  
 
 ### Case 1: one subgroup variable W2.
 m1 <- rdhte(y = Y2, x = X, covs.hte = factor(W2))
@@ -52,7 +74,7 @@ summary(m3)
 linfct <- c("`factor(W2):factor(W1)1:0` - `factor(W2):factor(W1)1:1`= 0")
 rdhte_lincom(model = m3, linfct = linfct)
 
-# Case 4: two (or more) continuous variables (this includes polynomials)
+# Case 4: two (or more) continuous variables (this includes polynomials). 
 m4 <- rdhte(y = Y3, x = X, covs.hte = "W2 + W3")
 summary(m4)
 linfct <- c("T:W2 - T:W3 = 0")
@@ -64,7 +86,8 @@ summary(m5)
 linfct <- c("T:W3.factor.W1.1 = 0")
 rdhte_lincom(model = m5, linfct = linfct)
 
-# Format: cases 1-3 can be either a formula or a expression. Cases 4-5 it only work as a formula, thus they need to be included in quotes. 
-# Note: some expression work either way, but with different interpretations. For example, W1 + W2 vs "W1 + W2".
+# Format: cases 1-3 can be either a formula or a expression. Cases 4-5 only work as a formula, thus they need to be included in quotes. 
+# Note: some expressions work either way, but with different interpretations. For example, W1 + W2 vs "W1 + W2".
+# Exact expressions for setting the linear restrictions in `linfct` can be obtained from the names in the `coef` object returned by `rdhte`.
 
 ```
