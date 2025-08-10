@@ -1,5 +1,5 @@
 {smcl}
-{* *!version 0.1.0 2025-06-30}{...}
+{* *!version 0.1.1 2025-08-08}{...}
 {viewerjumpto "Syntax" "rdbwhte##syntax"}{...}
 {viewerjumpto "Description" "rdbwhte##description"}{...}
 {viewerjumpto "Options" "rdbwhte##options"}{...}
@@ -34,12 +34,10 @@
 {marker description}{...}
 {title:Description}
 
-{p 4 8}{cmd:rdbwhte} provides data-driven bandwidth selection for estimation and inference of heterogeneous treatment effects in RD designs 
-({browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Palomba-Titiunik_2025_HTERD.pdf":Calonico, Cattaneo, Farrell, Palomba and Titiunik, 2025a}).
+{p 4 8}{cmd:rdbwhte} provides data-driven bandwidth selection for estimation and inference of heterogeneous treatment effects in RD designs ({browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Palomba-Titiunik_2025_HTERD.pdf":Calonico, Cattaneo, Farrell, Palomba and Titiunik, 2025a}).
 {p_end}
 
-{p 8 8} Companion commands are: {help rdhte:rdhte} for estimation and inference, and 
-{help rdhte_lincom:rdhte_lincom} for testing linear restrictions of paramaters.{p_end}
+{p 8 8} Companion commands are: {help rdhte:rdhte} for estimation and inference, and {help rdhte_lincom:rdhte_lincom} for testing linear restrictions of paramaters.{p_end}
 
 {p 8 8}A detailed introduction to {cmd:rdhte} in Stata is given in
 {browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Palomba-Titiunik_2025_Stata.pdf":Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025b)}.{p_end}
@@ -48,9 +46,7 @@
 
 {p 8 8}{browse "https://rdpackages.github.io/":https://rdpackages.github.io/}{p_end}
 
-{p 4 8}For background methodology, see 
-{browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Titiunik_2019_RESTAT.pdf":Calonico, Cattaneo, Farrell, and Titiunik (2019}), 
-{browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell_2020_ECTJ.pdf":Calonico, Cattaneo and Farrell (2020)}, 
+{p 4 8}For background methodology, see {browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Titiunik_2019_RESTAT.pdf":Calonico, Cattaneo, Farrell, and Titiunik (2019}), {browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell_2020_ECTJ.pdf":Calonico, Cattaneo and Farrell (2020)}, 
 {browse "https://rdpackages.github.io/references/Cattaneo-Titiunik_2022_ARE.pdf":Cattaneo and Titiunik (2022)}.{p_end}
 
 
@@ -75,7 +71,7 @@ If not specified, the RD Average Treatment Effect bandwidth is computed.{p_end}
 Default is {cmd:p(1)} (local linear regression).{p_end}
 
 {p 4 8}{cmd:q(}{it:#}{cmd:)} specifies the order of the local polynomial used to construct the bias correction. 
-Default is {cmd:q(2)} (local quadratic regression).{p_end}
+Default is q(2) (local quadratic regression).{p_end}
 
 {p 4 8}{cmd:kernel(}{it:kernelfn}{cmd:)} specifies the kernel function used to construct the local-polynomial estimator(s). Options are: {opt tri:angular}, {opt epa:nechnikov}, and {opt uni:form}.
 Default is {cmd:kernel(triangular)}.{p_end}
@@ -87,6 +83,7 @@ Default is {cmd:kernel(triangular)}.{p_end}
 
 {p 4 8}{cmd:vce(}{it:vcetype [vceopt1 vceopt2]}{cmd:)} specifies the procedure used to compute the variance-covariance matrix estimator.
 Options are:{p_end}
+{p 8 12}{cmd:vce(hc0)} for heteroskedasticity-robust plug-in residuals variance estimator without weights.{p_end}
 {p 8 12}{cmd:vce(hc1)} for heteroskedasticity-robust plug-in residuals variance estimator with {it:hc1} weights.{p_end}
 {p 8 12}{cmd:vce(hc2)} for heteroskedasticity-robust plug-in residuals variance estimator with {it:hc2} weights.{p_end}
 {p 8 12}{cmd:vce(hc3)} for heteroskedasticity-robust plug-in residuals variance estimator with {it:hc3} weights.{p_end}
@@ -103,13 +100,13 @@ Default is {cmd:level(95)}.{p_end}
 {title:Example:}
 
 {p 4 8}Setup using {browse "https://www.aeaweb.org/articles?id=10.1257/app.20210840":Granzier, Pons, and Tricaud (2023)} Data{p_end}
-{p 8 8}{cmd:. use rdhte_dataset.dta}{p_end}
+{p 8 8}{cmd:. use rdrobust_senate.dta}{p_end}
 
 {p 4 8}RD-HTE Estimation by left/right groups{p_end}
-{p 8 8}{cmd:. rdbwhte y x, covs_hte(i.w_left)}{p_end}
+{p 8 8}{cmd:. rdbwhte y x, covs_hte(i.left)}{p_end}
 
 {p 4 8}RD-HTE Estimation using a continuous variable{p_end}
-{p 8 8}{cmd:. rdbwhte y x, covs_hte(c.w_strength) }{p_end}
+{p 8 8}{cmd:. rdbwhte y x, covs_hte(c.mean_strength_nat1) }{p_end}
 
 
    {hline}
@@ -159,7 +156,7 @@ Default is {cmd:level(95)}.{p_end}
 {browse "https://rdpackages.github.io/references/Cattaneo-Titiunik_2022_ARE.pdf":Regression Discontinuity Designs}.
 {it:Annual Review of Economics}, 14: 821-851.{p_end}
 
-{p 4 8}Calonico, Cattaneo, and Farrell. 2020.
+{p 4 8}Calonico, S., M. D. Cattaneo, and M. H. Farrell. 2020.
 {browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell_2020_ECTJ.pdf":Optimal Bandwidth Choice for Robust Bias Corrected Inference in Regression Discontinuity Designs}.
 {it:Econometrics Journal}, 23(2): 192-210.{p_end}
 

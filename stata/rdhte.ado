@@ -2,11 +2,11 @@
 * RDHTE STATA PACKAGE -- rdhte
 * Authors: Sebastian Calonico, Matias D. Cattaneo, Max Farrell, Filippo Palomba, Rocio Tititunik
 ************************************************************************************************
-*!version 0.1.0  2025-06-30
+*!version 0.1.1  2025-08-08
 
 capture program drop rdhte
 program define rdhte, eclass
-    syntax varlist(min=2 max=2)  [if] [in] [ , c(real 0) p(integer 1) q(real 0) h(numlist) h_l(numlist) h_r(numlist) covs_hte(string) covs_eff(varlist) kernel(string) bwselect(string) vce(string) level(real 95) bwjoint labels]
+    syntax varlist(min=2 max=2)  [if] [in] [ , c(real 0) p(integer 1) q(real 0) h(numlist) h_l(numlist) h_r(numlist) covs_hte(string) covs_eff(varlist) kernel(string) weights(string) bwselect(string) vce(string) level(real 95) bwjoint labels]
 	
 	
     * ---- Build expected rdrobust ado path ----
@@ -44,13 +44,12 @@ program define rdhte, eclass
     }
 	
 	if (`maj1' < 10) {
-	    *di as result "Found rdrobust version: `rdversion'"
 		di as error "error: rdhte requires rdrobust version 10.0.0 or newer, your version is `rdversion'"
 		di as error "update from: net install rdrobust, from(https://raw.githubusercontent.com/rdpackages/rdrobust/master/stata) replace"
-    *    exit 9		
+        exit 9		
 	}
 	
-    * ---- Continue with your rdhte code here ----
+    * ---- Continue rdhte code  ----
 
 	
 	
@@ -344,7 +343,6 @@ program define rdhte, eclass
 		if ("`bwselect'"=="") local bwselect = "mserd"
 
 		if ("`bwjoint'" ~= "" | "`is_factor'" ~= "true") {
-			*qui rdbwselect `y' `x', c(`c') p(`p') q(`q') vce(`vce') kernel(`kernel') bwselect(`bwselect') covs(`covs_eff')
 			qui rdbwselect `y' `x', c(`c') p(`p') q(`q') vce(`vce_rdbw') kernel(`kernel') bwselect(`bwselect') covs(`covs_eff')
 						
 			qui replace `h' = e(mat_h)[1,1] if `T'==0			
@@ -383,7 +381,6 @@ program define rdhte, eclass
 
 			local i = 1
 			foreach fvar in `f_list' {
-				*qui rdbwselect `y' `x' if `fvar'==1, c(`c') p(`p') q(`q') vce(`vce') kernel(`kernel') bwselect(`bwselect') covs(`covs_eff')
 				qui rdbwselect `y' `x' if `fvar'==1, c(`c') p(`p') q(`q') vce(`vce_rdbw') kernel(`kernel') bwselect(`bwselect') covs(`covs_eff')
 				qui replace `h' = e(mat_h)[1,1] if `fvar'==1 & `T'==0
 				qui replace `h' = e(mat_h)[1,2] if `fvar'==1 & `T'==1
@@ -406,6 +403,7 @@ program define rdhte, eclass
 		if ("`h_l'"=="" & "`h_r'"=="") { /* same h on each side */
 				
 		local count: word count `h'
+		
 		* one common h
 		if (`count'==1) {
 			matrix tau_h = J(`I', 2, `h')
@@ -483,7 +481,6 @@ program define rdhte, eclass
 		local count_r: word count `h_r'
 				
 		if (`count_l'+`count_r' ==2) {
-		*disp `count_l'+`count_r'	
 			matrix tau_h_l = J(`I', 1, `h_l')
 			matrix tau_h_r = J(`I', 1, `h_r')
 			matrix tau_h = tau_h_l, tau_h_r
@@ -574,20 +571,21 @@ program define rdhte, eclass
 	qui gen `kw' = .
 
 	// Assign kernel weights based on the selected kernel type
-	if "`kernel'" == "uni" {
+	if ("`kernel_type'" == "Uniform") {
 		qui replace `kw' = 1 if abs(`Xc') <= `h' 
-		*local Kernel = "Uniform"
 	}	
-	if "`kernel'" == "tri" {
+	if ("`kernel_type'" == "Triangular") {
 	    qui replace `kw' = (1 - abs(`Xc') / `h') if abs(`Xc') <= `h' 
-		*local Kernel = "Triangular"		
 	}
-	if "`kernel'" == "epa" {
+	if ("`kernel_type'" == "Epanechnikov") {	
 		qui replace `kw' = 1 - (`Xc' / `h')^2 if abs(`Xc') <= `h' 
-		local Kernel = "Epanechnikov"
 	}
 
 
+	if ("`weights'"~="") {
+			qui replace `kw' = `kw'*`weights' 		
+		}
+		
 	* Create the regression formula depending on the presence of W
     if "`w'" != "" {
 		if "`is_factor'"=="true" {

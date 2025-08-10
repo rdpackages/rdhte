@@ -2,7 +2,7 @@
 * RDHTE STATA PACKAGE -- rdhte_lincom
 * Authors: Sebastian Calonico, Matias D. Cattaneo, Max Farrell, Filippo Palomba, Rocio Tititunik
 ************************************************************************************************
-*!version 0.1.0  2025-06-30
+*!version 0.1.1  2025-08-08
 
 capture program drop rdhte_lincom
 program define rdhte_lincom, eclass

@@ -1,5 +1,5 @@
 {smcl}
-{* *!version 0.1.0 2025-06-30}{...}
+{* *!version 0.1.1 2025-08-08}{...}
 {viewerjumpto "Syntax" "rdhte_lincom##syntax"}{...}
 {viewerjumpto "Description" "rdhte_lincom##description"}{...}
 {viewerjumpto "Options" "rdhte_lincom##options"}{...}
@@ -24,11 +24,9 @@
 {marker description}{...}
 {title:Description}
 
-{p 4 8}{cmd:rdhte_lincom} computes point estimates, p-values, and robust bias-corrected confidence intervals for linear combinations of parameters after any estimation using {cmd:rdhte}. 
-It is based on the Stata function {help lincom}. More general post-estimation linear hypotheses can be tested with the Stata function {help test}.{p_end}
+{p 4 8}{cmd:rdhte_lincom} computes point estimates, p-values, and robust bias-corrected confidence intervals for linear combinations of parameters after any estimation using {cmd:rdhte}. It is based on the Stata function {help lincom}.  More general post-estimation linear hypotheses can be tested with the Stata function {help test}.{p_end}
 
-{p 8 8} Companion commands are: {help rdhte:rdhte} for estimation and inference of RD-HTE, and 
-{help rdbwhte:rdbwhte} for data-driven bandwidth selection.{p_end}
+{p 8 8} Companion commands are: {help rdhte:rdhte} for estimation and inference of RD-HTE, and {help rdbwhte:rdbwhte} for data-driven bandwidth selection.{p_end}
 
 {p 8 8}A detailed introduction to {cmd:rdhte} in Stata is given in
 {browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Palomba-Titiunik_2025_Stata.pdf":Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025b)}.{p_end}
@@ -37,9 +35,7 @@ It is based on the Stata function {help lincom}. More general post-estimation li
 
 {p 8 8}{browse "https://rdpackages.github.io/":https://rdpackages.github.io/}{p_end}
 
-{p 4 8}For background methodology, see 
-{browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Titiunik_2019_RESTAT.pdf":Calonico, Cattaneo, Farrell, and Titiunik (2019}), 
-{browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell_2020_ECTJ.pdf":Calonico, Cattaneo and Farrell (2020)}, 
+{p 4 8}For background methodology, see {browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Titiunik_2019_RESTAT.pdf":Calonico, Cattaneo, Farrell, and Titiunik (2019}), {browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell_2020_ECTJ.pdf":Calonico, Cattaneo and Farrell (2020)}, 
 {browse "https://rdpackages.github.io/references/Cattaneo-Titiunik_2022_ARE.pdf":Cattaneo and Titiunik (2022)}.{p_end}
 
 {marker options}{...}
@@ -60,13 +56,13 @@ The default is {cmd:level(95)} or as set by set level.{p_end}
 {p 8 8}{cmd:. use rdhte_dataset.dta}{p_end}
 
 {p 4 8}RD-HTE Estimation by left/right groups{p_end}
-{p 8 8}{cmd:. rdhte y x, covs_hte(i.w_ideology) vce(cluster cluster_var)}{p_end}
+{p 8 8}{cmd:. rdhte y x, covs_hte(i.ideology) vce(cluster id_district)}{p_end}
 
 {p 4 8}Robust RD Estimation of HTE {p_end}
-{p 8 8}{cmd:. rdhte_lincom 4.w_ideology - 3.w_ideology}{p_end}
+{p 8 8}{cmd:. rdhte_lincom 4.ideology - 3.ideology}{p_end}
 
 {p 4 8}Testing for equality of the effects{p_end}
-{p 8 8}{cmd:. test 4.w_ideology = 3.w_ideology = 2.w_ideology}{p_end}
+{p 8 8}{cmd:. test 4.ideology = 3.ideology = 2.ideology}{p_end}
 
 {marker stored_results}{...}
 {title:Stored results}
@@ -103,7 +99,7 @@ The default is {cmd:level(95)} or as set by set level.{p_end}
 {browse "https://rdpackages.github.io/references/Cattaneo-Titiunik_2022_ARE.pdf":Regression Discontinuity Designs}.
 {it:Annual Review of Economics}, 14: 821-851.{p_end}
 
-{p 4 8}Calonico, Cattaneo, and Farrell. 2020.
+{p 4 8}Calonico, S., M. D. Cattaneo, and M. H. Farrell. 2020.
 {browse "https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell_2020_ECTJ.pdf":Optimal Bandwidth Choice for Robust Bias Corrected Inference in Regression Discontinuity Designs}.
 {it:Econometrics Journal}, 23(2): 192-210.{p_end}
 

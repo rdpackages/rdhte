@@ -67,7 +67,6 @@ rdhte y x, covs_hte(i.w_strength_qrt) vce(hc2 cluster_var)
 			 
 * Extra illustration:
 *Will be treated as continuous by default
-
 rdhte y x, covs_hte(w_strength_qrt) vce(hc2 cluster_var)
 
 
@@ -113,11 +112,11 @@ test (T = T#1.w_left = T#c.w_strength = T#1.w_left#c.w_strength = 0)
 * Extra illustration:
 * to aid interpretation, the fully interacted model will match results from 
 * category-specific estimation. Fix the bandwidth to make results match exactly
-*Match using a fixed bandwidth
 
 rdhte y x, covs_hte(i.w_left##c.w_strength) h(0.1) vce(hc2 cluster_var)
 rdhte_lincom T#c.w_strength + T#1.w_left#c.w_strength
 rdhte y x if w_left==1, covs_hte(c.w_strength) h(0.1) vce(hc2 cluster_var)
+rdhte y x if w_left==0, covs_hte(c.w_strength) h(0.1) vce(hc2 cluster_var)
 
 
 **************************************************************************

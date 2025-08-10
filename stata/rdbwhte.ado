@@ -2,14 +2,13 @@
 * RDHTE STATA PACKAGE -- rdbwhte
 * Authors: Sebastian Calonico, Matias D. Cattaneo, Max Farrell, Filippo Palomba, Rocio Tititunik
 ************************************************************************************************
-*!version 0.1.0  2025-06-30
+*!version 0.1.1  2025-08-08
 
 capture program drop rdbwhte
 program define rdbwhte, eclass
     syntax varlist(min=2 max=2)  [if] [in] [ , c(real 0) p(integer 1) q(real 0) covs_hte(string) bwselect(string) covs_eff(varlist) kernel(string) vce(string) cluster(string) bwjoint labels]
 	
 	marksample touse, novarlist
-	*marksample touse
 	preserve
     qui keep if `touse'
 	
@@ -17,12 +16,9 @@ program define rdbwhte, eclass
     local y : word 1 of `varlist'
     local x : word 2 of `varlist'		
 	
-	
 	qui drop if mi(`y') | mi(`x')
 	
-		
 	if ("`bwselect'"=="") local bwselect = "mserd"
-
 		
 	******************** Set Kernel ***************************
 	local kernel   = lower("`kernel'")
@@ -239,11 +235,6 @@ program define rdbwhte, eclass
 			// 6. Save into `interaction_labels' (unquoted tokens)
 			local interaction_labels `combos'
 
-			// 7. Display them cleanly
-			*di in yellow "All interaction labels (`n`-way):"
-			*foreach x of local interaction_labels {
-			*    di "`x'"
-			*}
 
 			local lab_list = "`interaction_labels'"
 			
