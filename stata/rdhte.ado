@@ -117,6 +117,10 @@ program define rdhte, eclass
 	if ("`vce_select'"=="cluster")       local vce_rdbw = "cluster"
 	
 	if ("`vce_select'"=="hc2" & "`clustvar'"!="")      	 local vce_rdbw = "cluster"
+
+	local vce_reg "`vce_select'"
+	if ("`vce_select'"=="robust") local vce_reg "robust"
+	if ("`clustvar'"!="") local vce_reg "cluster `clustvar'"
 	
 	if ("`vce_rdbw'"=="cluster")  	 local vce_rdbw = "`vce_rdbw' `clustvar'"
 	*if ("`clustvar'"!="")                local vce_rdbw = "`vce_rdbw' `clustvar'"
@@ -133,20 +137,20 @@ program define rdhte, eclass
 	lab var `Xc' "Xc"
 	
     * Construct polynomial terms up to order p/p+1
-    local Xp "c.`Xc'"
+    local Xp "`Xc'"
     forval i = 2/`p' {
         tempvar Xc`i'
         gen `Xc`i'' = `Xc'^`i'
-        local Xp "`Xp' c.`Xc`i''"
+        local Xp "`Xp' `Xc`i''"
     }
 	
 	if ("`q'"=="0") local q = `p'+1
 	
-	local Xq "c.`Xc'"
+	local Xq "`Xc'"
     forval i = 2/`q' {
         tempvar Xc`i'
         qui gen `Xc`i'' = `Xc'^`i'
-        local Xq "`Xq' c.`Xc`i''"
+        local Xq "`Xq' `Xc`i''"
     }
 	
     * Handle missing values
@@ -344,33 +348,37 @@ program define rdhte, eclass
 
 		if ("`bwjoint'" ~= "" | "`is_factor'" ~= "true") {
 			qui rdbwselect `y' `x', c(`c') p(`p') q(`q') vce(`vce_rdbw') kernel(`kernel') bwselect(`bwselect') covs(`covs_eff')
+			tempname bwmat
+			matrix `bwmat' = e(mat_h)
+			local h_left = `bwmat'[1,1]
+			local h_right = `bwmat'[1,2]
 						
-			qui replace `h' = e(mat_h)[1,1] if `T'==0			
-			qui replace `h' = e(mat_h)[1,2] if `T'==1
+			qui replace `h' = `h_left' if `T'==0			
+			qui replace `h' = `h_right' if `T'==1
 	
 
 		if ( "`is_factor'" == "true") {
 			local i = 1
 			foreach fvar in `f_list' {
 				
-				matrix tau_h[`i', 1] = e(mat_h)[1,1]
-				matrix tau_h[`i', 2] = e(mat_h)[1,2]
+				matrix tau_h[`i', 1] = `h_left'
+				matrix tau_h[`i', 2] = `h_right'
 				
-				qui count if `fvar'==1 & abs(`Xc') <= e(mat_h)[1,1] & `T'==0
+				qui count if `fvar'==1 & abs(`Xc') <= `h_left' & `T'==0
 				matrix tau_N [`i', 1] = r(N)
-				qui count if `fvar'==1 & abs(`Xc') <= e(mat_h)[1,2] & `T'==1
+				qui count if `fvar'==1 & abs(`Xc') <= `h_right' & `T'==1
 				matrix tau_N [`i', 2] = r(N)
 				
 				local ++i
             }				
 		} 
 		else {
-				matrix tau_h[1, 1] = e(mat_h)[1,1]
-				matrix tau_h[1, 2] = e(mat_h)[1,2]
+				matrix tau_h[1, 1] = `h_left'
+				matrix tau_h[1, 2] = `h_right'
 				
-				qui count if (abs(`Xc') <= e(mat_h)[1,1] & `T'==0)
+				qui count if (abs(`Xc') <= `h_left' & `T'==0)
 				matrix tau_N [1, 1] = r(N)
-				qui count if (abs(`Xc') <= e(mat_h)[1,2] & `T'==1)
+				qui count if (abs(`Xc') <= `h_right' & `T'==1)
 				matrix tau_N [1, 2] = r(N)			
 			}
 		}
@@ -382,15 +390,19 @@ program define rdhte, eclass
 			local i = 1
 			foreach fvar in `f_list' {
 				qui rdbwselect `y' `x' if `fvar'==1, c(`c') p(`p') q(`q') vce(`vce_rdbw') kernel(`kernel') bwselect(`bwselect') covs(`covs_eff')
-				qui replace `h' = e(mat_h)[1,1] if `fvar'==1 & `T'==0
-				qui replace `h' = e(mat_h)[1,2] if `fvar'==1 & `T'==1
+				tempname bwmat
+				matrix `bwmat' = e(mat_h)
+				local h_left = `bwmat'[1,1]
+				local h_right = `bwmat'[1,2]
+				qui replace `h' = `h_left' if `fvar'==1 & `T'==0
+				qui replace `h' = `h_right' if `fvar'==1 & `T'==1
 								
-				matrix tau_h[`i', 1] = e(mat_h)[1,1]
-				matrix tau_h[`i', 2] = e(mat_h)[1,2]
+				matrix tau_h[`i', 1] = `h_left'
+				matrix tau_h[`i', 2] = `h_right'
 					
-				qui count if `fvar'==1 & abs(`Xc') <= e(mat_h)[1,1]  & `T'==0
+				qui count if `fvar'==1 & abs(`Xc') <= `h_left'  & `T'==0
 				matrix tau_N [`i', 1] = r(N)
-				qui count if `fvar'==1 & abs(`Xc') <= e(mat_h)[1,2] & `T'==1
+				qui count if `fvar'==1 & abs(`Xc') <= `h_right' & `T'==1
 				matrix tau_N [`i', 2] = r(N)
 				
 				local ++i
@@ -412,17 +424,19 @@ program define rdhte, eclass
 			if ( "`is_factor'" == "true") {
 				local i = 1
 				foreach fvar in `f_list' {
-					qui count if `fvar'==1 & abs(`Xc') <= tau_h[`i', 1]  & `T'==0
+					local h_current = tau_h[`i', 1]
+					qui count if `fvar'==1 & abs(`Xc') <= `h_current'  & `T'==0
 					matrix tau_N [`i', 1] = r(N)
-					qui count if `fvar'==1 & abs(`Xc') <= tau_h[`i', 1]  & `T'==1
+					qui count if `fvar'==1 & abs(`Xc') <= `h_current'  & `T'==1
 					matrix tau_N [`i', 2] = r(N)
 					local ++i
 				}
 			}
 			else {
-					qui count if abs(`Xc') <= tau_h[1, 1]  & `T'==0
+					local h_current = tau_h[1, 1]
+					qui count if abs(`Xc') <= `h_current'  & `T'==0
 					matrix tau_N [1, 1] = r(N)
-					qui count if abs(`Xc') <= tau_h[1, 2]  & `T'==1
+					qui count if abs(`Xc') <= `h_current'  & `T'==1
 					matrix tau_N [1, 2] = r(N)				
 			}
 				
@@ -450,22 +464,24 @@ program define rdhte, eclass
 		if ( "`is_factor'" == "true") {
 			local i = 1
 			foreach fvar in `f_list' {
-				qui replace `h' = tau_h[`i', 1] if `fvar'==1
+				local h_current = tau_h[`i', 1]
+				qui replace `h' = `h_current' if `fvar'==1
 				
-				qui count if `fvar'==1 & abs(`Xc') <= tau_h[`i', 1] & `T'==0
+				qui count if `fvar'==1 & abs(`Xc') <= `h_current' & `T'==0
 				matrix tau_N [`i', 1] = r(N)
-				qui count if `fvar'==1 & abs(`Xc') <= tau_h[`i', 1] & `T'==1
+				qui count if `fvar'==1 & abs(`Xc') <= `h_current' & `T'==1
 				matrix tau_N [`i', 2] = r(N)
 				
 				local ++i
             }
 		}
 		else {
-				qui replace `h' = tau_h[1, 1] 
+				local h_current = tau_h[1, 1]
+				qui replace `h' = `h_current' 
 				
-				qui count if abs(`Xc') <= tau_h[1, 1] & `T'==0
+				qui count if abs(`Xc') <= `h_current' & `T'==0
 				matrix tau_N [1, 1] = r(N)
-				qui count if abs(`Xc') <= tau_h[1, 1] & `T'==1
+				qui count if abs(`Xc') <= `h_current' & `T'==1
 				matrix tau_N [1, 2] = r(N)
 		}
 			
@@ -495,17 +511,21 @@ program define rdhte, eclass
 			if ( "`is_factor'" == "true") {
 			local i = 1
 			foreach fvar in `f_list' {
-				qui count if (`fvar'==1 & abs(`Xc') <= tau_h[`i', 1] &  `T'==0)
+				local h_left = tau_h[`i', 1]
+				local h_right = tau_h[`i', 2]
+				qui count if (`fvar'==1 & abs(`Xc') <= `h_left' &  `T'==0)
 				matrix tau_N [`i', 1] = r(N)
-				qui count if (`fvar'==1 & abs(`Xc') <= tau_h[`i', 2]  & `T'==1)
+				qui count if (`fvar'==1 & abs(`Xc') <= `h_right'  & `T'==1)
 				matrix tau_N [`i', 2] = r(N)
 				local ++i
             }
 			}
 			else {				
-				qui count if (abs(`Xc') <= tau_h[1, 1] &  `T'==0)
+				local h_left = tau_h[1, 1]
+				local h_right = tau_h[1, 2]
+				qui count if (abs(`Xc') <= `h_left' &  `T'==0)
 				matrix tau_N [1, 1] = r(N)
-				qui count if (abs(`Xc') <= tau_h[1, 2]  & `T'==1)
+				qui count if (abs(`Xc') <= `h_right'  & `T'==1)
 				matrix tau_N [1, 2] = r(N)
 				
 				
@@ -538,12 +558,14 @@ program define rdhte, eclass
 			qui gen `h' = .
 			local i = 1
 			foreach fvar in `f_list' {
-				qui replace `h' = tau_h[`i', 1] if `fvar'==1 & `T'==0
-				qui replace `h' = tau_h[`i', 2] if `fvar'==1 & `T'==1
+				local h_left = tau_h[`i', 1]
+				local h_right = tau_h[`i', 2]
+				qui replace `h' = `h_left' if `fvar'==1 & `T'==0
+				qui replace `h' = `h_right' if `fvar'==1 & `T'==1
 
-				qui count if `fvar'==1 & abs(`Xc') <= tau_h[`i', 1] & `T'==0
+				qui count if `fvar'==1 & abs(`Xc') <= `h_left' & `T'==0
 				matrix tau_N [`i', 1] = r(N)
-				qui count if `fvar'==1 & abs(`Xc') <= tau_h[`i', 2] & `T'==1
+				qui count if `fvar'==1 & abs(`Xc') <= `h_right' & `T'==1
 				matrix tau_N [`i', 2] = r(N)
 				
 				local ++i
@@ -585,6 +607,15 @@ program define rdhte, eclass
 	if ("`weights'"~="") {
 			qui replace `kw' = `kw'*`weights' 		
 		}
+
+	local covs_eff_main ""
+	local covs_eff_factor ""
+	local covs_eff_cont ""
+	if ("`covs_eff'" != "") {
+		local covs_eff_main "c.(`covs_eff')"
+		local covs_eff_factor "c.(`covs_eff')##(`w')"
+		local covs_eff_cont "c.(`covs_eff')##c.(`w')"
+	}
 		
 	* Create the regression formula depending on the presence of W
     if "`w'" != "" {
@@ -592,7 +623,7 @@ program define rdhte, eclass
 			
 			*di "Running regression with heterogeneity by factor `w'..."
 			
-			qui reg `y' c.(`Xp')##`T'##(`w') c.(`covs_eff')##(`w') [aw = `kw'], vce(`vce') level(`level') 
+			qui reg `y' c.(`Xp')##`T'##(`w') `covs_eff_factor' [aw = `kw'], vce(`vce_reg') level(`level') 
 			local i = 1
 			foreach fvar in `f_list' {
 				local tmp =  _b[1.`T'] + _b[1.`T'#`fvar']
@@ -600,7 +631,7 @@ program define rdhte, eclass
 				local ++i
 			}
 			
-			qui reg `y' c.(`Xq')##`T'##(`w') c.(`covs_eff')##(`w') [aw = `kw'], vce(`vce') level(`level')
+			qui reg `y' c.(`Xq')##`T'##(`w') `covs_eff_factor' [aw = `kw'], vce(`vce_reg') level(`level')
 			mat CV = e(V)					
 				
 			local i = 1
@@ -646,7 +677,7 @@ program define rdhte, eclass
 		else{
 			*di "Running regression with heterogeneity by `w'..."
 			
-			qui reg `y' c.(`Xp')##`T'##c.(`w') c.(`covs_eff')##c.(`w') [aw = `kw'], vce(`vce') level(`level') 			
+			qui reg `y' c.(`Xp')##`T'##c.(`w') `covs_eff_cont' [aw = `kw'], vce(`vce_reg') level(`level') 			
 			
 			local i = 1
 			foreach fvar in `f_list' {
@@ -655,7 +686,7 @@ program define rdhte, eclass
 				local ++i
 			}
 						
-			qui reg `y' c.(`Xq')##`T'##c.(`w') c.(`covs_eff')##c.(`w') [aw = `kw'], vce(`vce') level(`level') 
+			qui reg `y' c.(`Xq')##`T'##c.(`w') `covs_eff_cont' [aw = `kw'], vce(`vce_reg') level(`level') 
 			mat CV = e(V)
 						
 			local i = 1
@@ -694,10 +725,10 @@ program define rdhte, eclass
     else {
         *di "Running regression without heterogeneity..."
 	    
-        qui reg `y' c.(`Xp')##`T'  c.(`covs_eff') [aw = `kw'], vce(`vce') level(`level')
+        qui reg `y' c.(`Xp')##`T' `covs_eff_main' [aw = `kw'], vce(`vce_reg') level(`level')
 				local tmp =  _b[1.`T']
 				matrix tau_hat [1, 1] = `tmp'
-        qui reg `y' c.(`Xq')##`T'  c.(`covs_eff') [aw = `kw'], vce(`vce') level(`level')
+        qui reg `y' c.(`Xq')##`T' `covs_eff_main' [aw = `kw'], vce(`vce_reg') level(`level')
 				local tmp1 =   _b[1.`T']
 				local tmp2 =  _se[1.`T']
 				matrix tau_bc [1, 1] = `tmp1'
@@ -866,7 +897,3 @@ program define rdhte, eclass
 	ereturn matrix tau_ci_ub = tau_ci_r			
 		
 end
-
-
-
-

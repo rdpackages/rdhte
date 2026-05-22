@@ -1,0 +1,96 @@
+# Local-only agent notes
+AGENTS.md
+
+# Default repository publish boundary.
+# New files are local unless they are inside one of the public package
+# surfaces below or are public repository metadata.
+/*
+
+!/.github/
+!/.github/**
+!/Python/
+!/R/
+!/stata/
+!/stata/**
+!/scripts/
+!/scripts/**
+!/README.md
+!/LICENSE.md
+!/CHANGELOG.md
+!/.gitattributes
+!/.gitignore
+
+# Keep only the Python package subtree public under Python/.
+/Python/*
+!/Python/rdhte/
+!/Python/rdhte/**
+
+# Keep only the R package subtree public under R/.
+/R/*
+!/R/rdhte_illustration.R
+!/R/rdhte_dataset.csv
+!/R/rdhte/
+!/R/rdhte/**
+
+# Local numerical audit outputs.
+/docs/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+**/.idea/
+**/.vscode/
+
+# Local environments
+.env
+.env.*
+.venv/
+venv/
+env/
+**/.venv/
+**/venv/
+**/env/
+
+# Python caches and test output
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+**/.pytest_cache/
+pytest-cache-files-*/
+**/pytest-cache-files-*/
+.coverage
+htmlcov/
+**/htmlcov/
+
+# R session and check output
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+**/.Rhistory
+**/.RData
+**/.Ruserdata
+**/.Rproj.user/
+*.Rcheck/
+**/*.Rcheck/
+
+# Package build artifacts
+build/
+dist/
+**/build/
+**/dist/
+*.egg-info/
+**/*.egg-info/
+*.tar.gz
+*.whl
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*~

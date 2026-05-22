@@ -244,16 +244,20 @@ program define rdbwhte, eclass
 	
 		if ("`bwjoint'" ~= "" & "`is_factor'" == "true") {
 		qui rdbwselect `y' `x', c(`c') p(`p') q(`q') bwselect(`bwselect') vce(`vce') kernel(`kernel') covs(`covs_eff')
+			tempname bwmat
+			matrix `bwmat' = e(mat_h)
+			local h_left = `bwmat'[1,1]
+			local h_right = `bwmat'[1,2]
 				
 			local i = 1
 			foreach fvar in `f_list' {
 								
-				matrix tau_h[`i', 1] = e(mat_h)[1,1]
-				matrix tau_h[`i', 2] = e(mat_h)[1,2]
+				matrix tau_h[`i', 1] = `h_left'
+				matrix tau_h[`i', 2] = `h_right'
 							
-				qui count if `fvar'==1 & abs(`Xc') <= e(mat_h)[1,1] & `T'==0
+				qui count if `fvar'==1 & abs(`Xc') <= `h_left' & `T'==0
 				matrix tau_N [`i', 1] = r(N)
-				qui count if `fvar'==1 & abs(`Xc') <= e(mat_h)[1,2] & `T'==1
+				qui count if `fvar'==1 & abs(`Xc') <= `h_right' & `T'==1
 				matrix tau_N [`i', 2] = r(N)				
 				
 				local ++i
@@ -263,13 +267,17 @@ program define rdbwhte, eclass
 
 	if ("`is_factor'" ~= "true") {
 		qui rdbwselect `y' `x', c(`c') p(`p') q(`q') bwselect(`bwselect') vce(`vce') kernel(`kernel') covs(`covs_eff')
+				tempname bwmat
+				matrix `bwmat' = e(mat_h)
+				local h_left = `bwmat'[1,1]
+				local h_right = `bwmat'[1,2]
 				
-				matrix tau_h[1, 1] = e(mat_h)[1,1]
-				matrix tau_h[1, 2] = e(mat_h)[1,2]
+				matrix tau_h[1, 1] = `h_left'
+				matrix tau_h[1, 2] = `h_right'
 				
-				qui count if (abs(`Xc') <= e(mat_h)[1,1] & `T'==0)
+				qui count if (abs(`Xc') <= `h_left' & `T'==0)
 				matrix tau_N [1, 1] = r(N)
-				qui count if (abs(`Xc') <= e(mat_h)[1,2] & `T'==1)
+				qui count if (abs(`Xc') <= `h_right' & `T'==1)
 				matrix tau_N [1, 2] = r(N)	
 							
 		}
@@ -278,13 +286,17 @@ program define rdbwhte, eclass
 			local i = 1
 			foreach fvar in `f_list' {
 				qui rdbwselect `y' `x' if `fvar'==1, c(`c') p(`p') q(`q') bwselect(`bwselect') vce(`vce') kernel(`kernel') covs(`covs_eff')
+				tempname bwmat
+				matrix `bwmat' = e(mat_h)
+				local h_left = `bwmat'[1,1]
+				local h_right = `bwmat'[1,2]
 				
-				matrix tau_h[`i', 1] = e(mat_h)[1,1]
-				matrix tau_h[`i', 2] = e(mat_h)[1,2]
+				matrix tau_h[`i', 1] = `h_left'
+				matrix tau_h[`i', 2] = `h_right'
 				
-				qui count if `fvar'==1 & abs(`Xc') <= e(mat_h)[1,1] & `T'==0
+				qui count if `fvar'==1 & abs(`Xc') <= `h_left' & `T'==0
 				matrix tau_N [`i', 1] = r(N)
-				qui count if `fvar'==1 & abs(`Xc') <= e(mat_h)[1,2] & `T'==1
+				qui count if `fvar'==1 & abs(`Xc') <= `h_right' & `T'==1
 				matrix tau_N [`i', 2] = r(N)
 				
 				local ++i
@@ -398,7 +410,6 @@ program define rdbwhte, eclass
 
 		
 end
-
 
 
 
