@@ -11,7 +11,7 @@ local stata_dir "`repo_root'/stata"
 
 cd "`stata_dir'"
 
-local helpfiles rdhte rdbwhte rdhte_lincom
+local helpfiles rdhte rdbwhte rdhte_lincom rdhte_plot
 foreach helpfile of local helpfiles {
     display as text "Building `helpfile'.pdf"
     translate "`helpfile'.sthlp" "`helpfile'.pdf", replace translator(smcl2pdf)

@@ -17,7 +17,7 @@ WINDOWS_CANDIDATES = [
     r"C:\Program Files\Stata19\StataBE-64.exe",
 ]
 
-HELP_FILES = ("rdhte", "rdbwhte", "rdhte_lincom")
+HELP_FILES = ("rdhte", "rdbwhte", "rdhte_lincom", "rdhte_plot")
 
 
 def find_repo_root(start: Path) -> Path:

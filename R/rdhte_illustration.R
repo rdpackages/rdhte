@@ -1,162 +1,201 @@
-###########################################################################
-## RDHTE R Package
-## Code for Empirical Illustration
-## Authors: Sebastian Calonico, Matias D. Cattaneo, Max H. Farrell, Filippo Palomba and Rocio Titiunik 
-###########################################################################
+################################################################################
+## RDHTE Package
+## Empirical Illustration
+################################################################################
 
-### Install R library
-### NOTE: depending on your system, you may need to do it as root
-#install.packages('rdhte')
-#install.packages('rdrobust')
+##########################################################################
+## Data and design
+##########################################################################
+## This script illustrates `rdhte` on a real-data extract from Granzier,
+## Pons, and Tricaud (2023, AEJ: Applied), "Coordination and Bandwagon
+## Effects: How Past Rankings Shape the Behavior of Voters and
+## Candidates." The authors study French two-round elections, where
+## candidates must clear a qualifying-vote threshold in the first round
+## to advance to the runoff. The institutional rule creates a sharp RD
+## design on every candidate's first-round margin against that threshold:
+## candidates just above the cutoff advance, those just below do not.
+##
+## The bundled extract `rdhte_dataset.csv` has 39,534 candidate-race
+## observations with the following variables:
+##
+##   y                outcome: 1 if the candidate advances to the runoff
+##   x                running variable: first-round margin against the
+##                    qualifying threshold (cutoff at zero)
+##   cluster_var      district identifier (cluster-robust inference)
+##   w_left           1 if the candidate's party is left of center
+##   w_ideology       unordered party-ideology bucket (4 levels)
+##   w_strength       continuous proxy for ex-ante candidate strength
+##   w_strong         1 if above-median strength
+##   w_strength_qrt   ordered quartile bucket of w_strength
 
+library(rdhte)
+library(rdrobust)
 
-### Clear R environment
-rm(list=ls(all=TRUE))
+rd.data <- read.csv("rdhte_dataset.csv")
 
 
 ##########################################################################
-# Set up packages, etc
+## Single binary variable
 ##########################################################################
-library("rdhte")
-library("rdrobust")
 
+rd_left <- rdhte(y = y, x = x, covs.hte = w_left,
+                 cluster = cluster_var, data = rd.data)
+summary(rd_left)
 
-##########################################################################
-# Load RDHTE illustration data (from Granzier, Pons and Tricaud (2023, AEJ)
-##########################################################################
-attach(rd.data <- read.csv("rdhte_dataset.csv", stringsAsFactors = TRUE))
+rdhte_lincom(rd_left, "covs.hte1 - covs.hte0 = 0")
 
+rdhte(y = y, x = x, covs.hte = w_left,
+      cluster = cluster_var, bw.joint = TRUE, data = rd.data)
 
-
-##########################################################################
-# Single binary variable
-##########################################################################
-summary(rd_left <- rdhte(y = y, x = x, covs.hte = factor(w_left), cluster = cluster_var))
-
-
-### Post-estimation illustration -- rdhte_lincom
-# How large is the advantage for left-of-center candidates?
-rdhte_lincom(model=rd_left, linfct = c("`factor(w_left)1` - `factor(w_left)0` = 0"))
-#Note: must specify the hypothesis as A-B=0 and not as A=B. The command below will fail
-#rdhte_lincom(model=rd_left, linfct = c("`factor(w_left)1` = `factor(w_left)0`"))
-
-# Extra illustration:
-# Note that forcing a common bandwidth makes the effect for `center or right' 
-# (incorrectly) statistically significant
-summary(rdhte(y = y, x = x, covs.hte = w_left, cluster = cluster_var, bw.joint = TRUE))
-
-# Extra illustration:
-#rdhte will automatically treat a variable coded 0/1 as a factor.
-summary(rd_left <- rdhte(y = y, x = x, covs.hte = w_left, cluster = cluster_var))
-rdhte_lincom(model=rd_left, linfct = c("`w_left1` - `w_left0` = 0"))
-
-##########################################################################
-# Single categorical variable -- unordered
-##########################################################################
-summary(rd_ideology <- rdhte(y = y, x = x, covs.hte = factor(w_ideology), cluster = cluster_var))
-
-
-### Post-estimation illustration
-# All the non-left groups are statistically 
-# indistinguishable from each other and from zero
-rdhte_lincom(model=rd_ideology, linfct = c("`factor(w_ideology)4` - `factor(w_ideology)3` = 0", "`factor(w_ideology)4` - `factor(w_ideology)2` = 0", "`factor(w_ideology)4` = 0"))
-rdhte_lincom(model=rd_ideology, linfct = c("`factor(w_ideology)2` = 0", "`factor(w_ideology)3` = 0", "`factor(w_ideology)4` = 0"))
-
+rdhte(y = y, x = x, covs.hte = factor(w_left),
+      cluster = cluster_var, data = rd.data)
 
 
 ##########################################################################
-# Single categorical variable -- ordered
-##########################################################################
-summary(rdhte(y = y, x = x, covs.hte = factor(w_strength_qrt), cluster = cluster_var))
-
-# -> result: advantage increases with strength 
-#candidates with higher average strength at the national level have higher effect, monotonic!
-
-
-# Extra illustration:
-#Will be treated as continuous by default
-summary(rdhte(y = y, x = x, covs.hte = w_strength_qrt, cluster = cluster_var))
-
-
-
-##########################################################################
-# Two binary variables - interaction
+## Single categorical variable -- unordered
 ##########################################################################
 
-summary(rdhte(y = y, x = x, covs.hte = factor(w_left):factor(w_strong), cluster = cluster_var))
+rd_ideology <- rdhte(y = y, x = x, covs.hte = factor(w_ideology),
+                     cluster = cluster_var, data = rd.data)
+summary(rd_ideology)
 
-# Extra illustration:
-# Above syntax is the same as creating a new factor variable flagging each combination
-interactions <- 1*(w_left==0)*(w_strong==1) + 2*(w_left==0)*(w_strong==2) + 3*(w_left==1)*(w_strong==1) + 4*(w_left==1)*(w_strong==2)
-summary(rdhte(y = y, x = x, covs.hte = factor(interactions), cluster = cluster_var))
+rdhte_lincom(rd_ideology,
+             c("covs.hte4 - covs.hte3 = 0",
+               "covs.hte4 - covs.hte2 = 0",
+               "covs.hte4 = 0"))
 
 
 ##########################################################################
-# Single continuous variable
+## Single categorical variable -- ordered
 ##########################################################################
 
-summary(rd_continuous <- rdhte(y = y, x = x, covs.hte = w_strength, kernel="uni", cluster = cluster_var))
+rdhte(y = y, x = x, covs.hte = factor(w_strength_qrt),
+      cluster = cluster_var, data = rd.data)
 
-# to aid with interpretation, notice that the coefficient on T#W
-# is _precisely_ a slope coefficient in a linear model, and can be interpreted the same.
-# To see this, use the uniform kernel and a set bandwidth to fit local unweighted least squares
-# then match this with the base command -lm()- 
-
-trt <- (x>0)
-new.data <- data.frame(y,x,w_strength,trt)
-using.lm <- coef(lm(y ~ trt*x*w_strength, data=new.data[abs(new.data$x)<rd_continuous$h[1],]))
-rd_continuous$Estimate[1] - using.lm["trtTRUE"]
-rd_continuous$Estimate[2] - using.lm["trtTRUE:w_strength"]
-
-# IMPORTANT: inference requires robust bias correction and cannot be obtained from this regression
+rdhte(y = y, x = x, covs.hte = w_strength_qrt,
+      cluster = cluster_var, data = rd.data)
 
 
 ##########################################################################
-# Interaction effect: binary#continuous
+## Two binary variables -- interaction
 ##########################################################################
 
-#Full interaction is most natural (different intercept and slope for each category)
-summary(rd_interaction <- rdhte(y = y, x = x, covs.hte = "w_left*w_strength", cluster = cluster_var))
-
-# Extra illustration:
-# Using the factor() syntax is available, but will lead to different baseline categories for the factor 
-# variable, leading to different intercepts.
-summary(rdhte(y = y, x = x, covs.hte = "factor(w_left)*w_strength", cluster = cluster_var))
-
-# Extra illustration:
-# Each effect is insignificant, but the joint test shows there is information
-rdhte_lincom(model=rd_interaction, linfct = c("`T` = 0", "`T:w_left` = 0", "`T:w_strength` = 0", "`T:w_left.w_strength` = 0"))
-
-# Extra illustration:
-# to aid interpretation, the fully interacted model will match results from 
-# category-specific estimation. Fix the bandwidth to make results match exactly.
-summary(rd_interaction <- rdhte(y = y, x = x, covs.hte = "w_left*w_strength", h=0.1, cluster = cluster_var))
-summary(rdhte(y = y[w_left==0], x = x[w_left==0], covs.hte = w_strength[w_left==0], h=0.1, cluster = cluster_var[w_left==0]))
-summary(rdhte(y = y[w_left==1], x = x[w_left==1], covs.hte = w_strength[w_left==1], h=0.1, cluster = cluster_var[w_left==1]))
-rdhte_lincom(model=rd_interaction, linfct = c("`T` + `T:w_left` = 0", "`T:w_strength` + `T:w_left.w_strength` = 0"))
-
+rdhte(y = y, x = x, covs.hte = factor(w_left):factor(w_strong),
+      cluster = cluster_var, data = rd.data)
 
 
 ##########################################################################
-# Replicating rdrobust
+## Single continuous variable
 ##########################################################################
 
-### Average effects
+rd_strength <- rdhte(y = y, x = x, covs.hte = w_strength,
+                     kernel = "uni", cluster = cluster_var,
+                     data = rd.data)
+summary(rd_strength)
 
-#Using default settings, packages will not match, because of different settings
-summary(rdhte(y = y, x = x))
-summary(rdrobust(y = y, x = x))
-
-# to replicate exactly with RDROBUST, set rho=1 and specific vce() option
-# bandwidth selection is also different, so enforce the same bandwidth
-summary(rdhte(y = y, x = x, h=0.1, vce="hc3"))
-summary(rdrobust(y = y, x = x, h=0.1, rho=1, vce="hc3"))
+bw <- rd_strength$h[1, 1]
+lm(y ~ I(x > 0) * x * w_strength,
+   data = subset(rd.data, abs(x) <= bw))
 
 
-### subgroup analysis
+##########################################################################
+## Interaction effect: binary x continuous
+##########################################################################
 
-# keeping the settings the same as above, rdhte will match rdrobust if the latter
-# is run for each subgroup separately
-summary(rdhte(y = y, x = x, covs.hte=w_left, h=c(0.078,0.116), vce="hc3"))
-summary(rdrobust(y = y[w_left==1], x = x[w_left==1], h=0.116, rho=1, vce="hc3"))
+rd_interaction <- rdhte(y = y, x = x,
+                        covs.hte = "w_left*w_strength",
+                        cluster = cluster_var, data = rd.data)
+summary(rd_interaction)
 
+rdhte_lincom(rd_interaction,
+             c("T = 0",
+               "T:w_left = 0",
+               "T:w_strength = 0",
+               "T:w_left:w_strength = 0"))
+
+rd_interaction <- rdhte(y = y, x = x,
+                        covs.hte = "w_left*w_strength",
+                        h = 0.1, cluster = cluster_var, data = rd.data)
+summary(rd_interaction)
+
+rdhte(y = y, x = x, covs.hte = w_strength, h = 0.1,
+      cluster = cluster_var, subset = w_left == 1, data = rd.data)
+
+rdhte(y = y, x = x, covs.hte = w_strength, h = 0.1,
+      cluster = cluster_var, subset = w_left == 0, data = rd.data)
+
+
+##########################################################################
+## Standalone bandwidth selection (rdbwhte)
+##########################################################################
+
+rd_bw <- rdbwhte(y = y, x = x, covs.hte = factor(w_ideology),
+                 cluster = cluster_var, data = rd.data)
+summary(rd_bw)
+rd_bw$h
+
+rdbwhte(y = y, x = x, covs.hte = factor(w_ideology),
+        cluster = cluster_var, bw.joint = TRUE, data = rd.data)
+
+
+##########################################################################
+## Efficiency-improving covariates (covs.eff)
+##########################################################################
+
+rd_eff_off <- rdhte(y = y, x = x, covs.hte = factor(w_ideology),
+                    cluster = cluster_var, data = rd.data)
+rd_eff_on <- rdhte(y = y, x = x, covs.hte = factor(w_ideology),
+                   covs.eff = w_strength, cluster = cluster_var,
+                   data = rd.data)
+
+cbind(no_covs_eff = rd_eff_off$se.rb, covs_eff = rd_eff_on$se.rb)
+
+
+##########################################################################
+## Plotting
+##########################################################################
+
+plot(rd_ideology)
+plot(rd_ideology, sort = TRUE)
+plot(rd_ideology, sort = TRUE,
+     title = "Heterogeneity by ideology bucket",
+     ylab = "Sharp RD ITT")
+
+
+##########################################################################
+## Building publication-ready tables
+##########################################################################
+
+broom::tidy(rd_ideology)
+broom::glance(rd_ideology)
+
+rd_hc1 <- rdhte(y = y, x = x, covs.hte = factor(w_ideology),
+                vce = "hc1", data = rd.data)
+rd_hc2 <- rdhte(y = y, x = x, covs.hte = factor(w_ideology),
+                vce = "hc2", data = rd.data)
+rd_hc3 <- rdhte(y = y, x = x, covs.hte = factor(w_ideology),
+                vce = "hc3", data = rd.data)
+rd_cr1 <- rdhte(y = y, x = x, covs.hte = factor(w_ideology),
+                vce = "cr1", cluster = cluster_var, data = rd.data)
+
+cbind(HC1 = rd_hc1$Estimate, HC2 = rd_hc2$Estimate,
+      HC3 = rd_hc3$Estimate, CR1 = rd_cr1$Estimate)
+cbind(HC1 = rd_hc1$se.rb, HC2 = rd_hc2$se.rb,
+      HC3 = rd_hc3$se.rb, CR1 = rd_cr1$se.rb)
+
+
+##########################################################################
+## Replicating rdrobust
+##########################################################################
+
+rdhte(y = y, x = x, data = rd.data)
+rdrobust(y = rd.data$y, x = rd.data$x)
+
+rdhte(y = y, x = x, h = 0.1, vce = "hc3", data = rd.data)
+rdrobust(y = rd.data$y, x = rd.data$x, h = 0.1, rho = 1, vce = "hc3")
+
+rdhte(y = y, x = x, covs.hte = w_left, h = c(0.078, 0.116),
+      vce = "hc3", data = rd.data)
+rdrobust(y = rd.data$y[rd.data$w_left == 1],
+         x = rd.data$x[rd.data$w_left == 1],
+         h = 0.116, rho = 1, vce = "hc3")

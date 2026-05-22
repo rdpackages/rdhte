@@ -1,7 +1,7 @@
 # rdhte Numerical Baselines
 
-Local benchmark harness for checking numerical stability across the R and Stata
-implementations. Add the Python implementation here after `Python/rdhte/` lands.
+Local benchmark harness for checking numerical stability across the R, Stata,
+and Python implementations.
 
 The scripts write JSON files under `docs/audit/baselines/` by default. That
 directory is local-only under the top-level `.gitignore`.
@@ -22,6 +22,7 @@ From the repository root:
 
 ```powershell
 Rscript scripts/numerical-baselines/run_r_baseline.R
+python scripts/numerical-baselines/run_python_baseline.py
 ```
 
 If Stata is available:
@@ -34,6 +35,8 @@ Then compare two JSON files:
 
 ```powershell
 python scripts/numerical-baselines/compare_baselines.py docs/audit/baselines/r-current.json docs/audit/baselines/r-next.json
+python scripts/numerical-baselines/compare_baselines.py docs/audit/baselines/r-current.json docs/audit/baselines/python-current.json --common-only --numeric-only --atol 1e-5 --rtol 1e-5
+python scripts/numerical-baselines/compare_stata_baseline.py docs/audit/baselines/r-current.json docs/audit/baselines/stata-current.json --atol 2e-5 --rtol 2e-5
 ```
 
 Use tight tolerances for baseline-to-baseline checks within the same language.

@@ -16,7 +16,7 @@ pip install rdhte
 
 - Help: [PYPI repository](https://pypi.org/project/rdhte/).
 
-- Source and examples will be added under `Python/rdhte/` before the first Python release.
+- Examples/data: [rdhte illustration](Python/rdhte_illustration.py), [rdhte data](Python/rdhte_dataset.csv).
 
 
 ## R Implementation
@@ -38,7 +38,7 @@ To install/update in Stata type:
 net install rdhte, from(https://raw.githubusercontent.com/rdpackages/rdhte/main/stata) replace
 ```
 
-- Help: [rdhte](stata/rdhte.pdf), [rdbwhte](stata/rdbwhte.pdf), [rdhte_lincom](stata/rdhte_lincom.pdf).
+- Help: [rdhte](stata/rdhte.pdf), [rdbwhte](stata/rdbwhte.pdf), [rdhte_lincom](stata/rdhte_lincom.pdf), [rdhte_plot](stata/rdhte_plot.pdf).
 
 - Replication: [rdhte illustration](stata/rdhte_illustration.do), [rdhte data](stata/rdhte_dataset.dta).
 

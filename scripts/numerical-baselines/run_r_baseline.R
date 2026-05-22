@@ -20,6 +20,7 @@ suppressPackageStartupMessages({
 })
 
 source(file.path(repo_root, "R", "rdhte", "R", "rdbwhte.R"))
+source(file.path(repo_root, "R", "rdhte", "R", "helpers.R"))
 source(file.path(repo_root, "R", "rdhte", "R", "rdhte.R"))
 source(file.path(repo_root, "R", "rdhte", "R", "rdhte_lincom.R"))
 
@@ -101,19 +102,21 @@ summarize_rdbwhte <- function(obj) {
 summarize_lincom <- function(obj) {
   individual <- obj$individual
   joint <- obj$joint
+  stat_col <- if ("z_stat" %in% names(individual)) "z_stat" else "t_stat"
+  joint_stat_col <- if ("statistic.chi2" %in% names(joint)) "statistic.chi2" else "statistic"
   list(
     individual = lapply(seq_len(nrow(individual)), function(i) {
       list(
         hypothesis = individual$hypothesis[i],
         estimate = num(individual$estimate[i]),
-        t_stat = num(individual$t_stat[i]),
+        z_stat = num(individual[[stat_col]][i]),
         p_value = num(individual$p_value[i]),
         conf_low = num(individual$conf.low[i]),
         conf_high = num(individual$conf.high[i])
       )
     }),
     joint = list(
-      statistic_chi2 = num(joint$statistic.chi2[1]),
+      statistic_chi2 = num(joint[[joint_stat_col]][1]),
       df = num(joint$df[1]),
       p_value = num(joint$p_value[1])
     )

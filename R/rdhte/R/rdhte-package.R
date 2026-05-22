@@ -12,24 +12,25 @@
 #' Commands: \code{\link{rdhte}} for estimation and inference.
 #'   \code{\link{rdbwhte}} for data-driven bandwidth selection.
 #'
-#' Related Stata and R packages useful for inference in regression discontinuity (RD)
-#'   designs are described in the website: \url{https://rdpackages.github.io/}.
+#' Related software packages useful for inference in regression discontinuity
+#'   (RD) designs are described in the website:
+#'   \url{https://rdpackages.github.io/}.
 #'
 #' @author
 #' Sebastian Calonico, University of California, Davis \email{scalonico@ucdavis.edu}.
 #'
-#' Matias D. Cattaneo, Princeton University  \email{cattaneo@princeton.edu}.
+#' Matias D. Cattaneo, Princeton University  \email{matias.d.cattaneo@gmail.com}.
 #'
-#' Max H. Farrell, University of California, Santa Barbara \email{maxhfarrell@ucsb.edu}.
+#' Max H. Farrell, University of California, Santa Barbara \email{mhfarrell@gmail.com}.
 #'
-#' Filippo Palomba, Princeton University \email{fpalomba@princeton.edu}.
+#' Filippo Palomba, Princeton University \email{filippo.palomba19@gmail.com}.
 #'
-#' Rocio Titiunik, Princeton University \email{titiunik@princeton.edu}.
+#' Rocio Titiunik, Princeton University \email{rocio.titiunik@gmail.com}.
 #'
 #' @references
-#' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): rdhte: Learning Conditional Average Treatment Effects in RD Designs. \emph{Working paper}.
+#' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): \href{https://arxiv.org/abs/2507.01128}{rdhte: Conditional Average Treatment Effects in RD Designs.} \emph{Working paper}.
 #'
-#' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): Treatment Effect Heterogeneity in Regression Discontinuity Designs. \emph{Working paper}
+#' Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): \href{https://arxiv.org/abs/2503.13696}{Treatment Effect Heterogeneity in Regression Discontinuity Designs.} \emph{Working paper}.
 #'
 #'
 #' @importFrom stats lm
@@ -44,6 +45,7 @@
 #' @importFrom stats qt
 #' @importFrom stats setNames
 #' @importFrom stats as.formula 
+#' @importFrom stats coef
 #' @importFrom stats confint
 #' @import rdrobust
 #' @import sandwich
@@ -52,3 +54,5 @@
 #' @aliases rdhte-package
 "_PACKAGE"
 
+## Silence R CMD check NOTE about the ggplot2 .data pronoun used in plot.rdhte().
+utils::globalVariables(".data")

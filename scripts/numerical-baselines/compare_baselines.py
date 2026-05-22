@@ -34,6 +34,11 @@ def main() -> int:
         action="store_true",
         help="Compare only fields present in both files.",
     )
+    parser.add_argument(
+        "--numeric-only",
+        action="store_true",
+        help="Compare only numeric fields; ignore labels and metadata.",
+    )
     args = parser.parse_args()
 
     expected = json.loads(Path(args.expected).read_text(encoding="utf-8"))
@@ -59,6 +64,8 @@ def main() -> int:
             continue
         a = left[key]
         b = right[key]
+        if args.numeric_only and not (is_number(a) and is_number(b)):
+            continue
         if is_number(a) and is_number(b):
             if not math.isclose(float(a), float(b), rel_tol=args.rtol, abs_tol=args.atol):
                 failures.append(f"{key}: expected {a:.17g}, actual {b:.17g}, diff {float(b) - float(a):.3g}")

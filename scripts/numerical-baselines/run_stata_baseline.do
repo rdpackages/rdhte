@@ -2,7 +2,7 @@ version 15
 clear all
 set more off
 
-args repo_root output
+args repo_root output precision
 if `"`repo_root'"' == "" {
     local repo_root "`c(pwd)'"
 }
@@ -11,6 +11,15 @@ if `"`output'"' == "" {
     local output "`repo_root'/docs/audit/baselines/stata-current.json"
 }
 local output : subinstr local output "\" "/", all
+local precision = lower(`"`precision'"')
+local precision_opt ""
+if `"`precision'"' != "" {
+    if !inlist("`precision'", "double", "single") {
+        display as error "precision argument must be double or single"
+        exit 198
+    }
+    local precision_opt "precision(`precision')"
+}
 
 capture mkdir "`repo_root'/docs"
 capture mkdir "`repo_root'/docs/audit"
@@ -94,34 +103,34 @@ file write jout `"  "environment": {"stata_version": "`c(stata_version)'", "plat
 file write jout `"  "cases": {"' _n
 
 use "`repo_root'/stata/rdhte_dataset.dta", clear
-rdhte y x, covs_hte(w_left) vce(hc2 cluster_var)
+rdhte y x, covs_hte(w_left) vce(cluster cluster_var) `precision_opt'
 write_rdhte_case jout binary_left ""
 
 rdhte_lincom 1.w_left - 0.w_left
 write_lincom_case jout binary_left_lincom ","
 
 use "`repo_root'/stata/rdhte_dataset.dta", clear
-rdhte y x, covs_hte(w_left) vce(hc2 cluster_var) bwjoint
+rdhte y x, covs_hte(w_left) vce(cluster cluster_var) bwjoint `precision_opt'
 write_rdhte_case jout binary_left_joint ","
 
 use "`repo_root'/stata/rdhte_dataset.dta", clear
-rdbwhte y x, covs_hte(w_left) vce(cluster cluster_var)
+rdbwhte y x, covs_hte(w_left) vce(cluster cluster_var) `precision_opt'
 write_rdbwhte_case jout binary_left_bw ","
 
 use "`repo_root'/stata/rdhte_dataset.dta", clear
-rdhte y x, covs_hte(i.w_ideology) vce(hc2 cluster_var)
+rdhte y x, covs_hte(i.w_ideology) vce(cluster cluster_var) `precision_opt'
 write_rdhte_case jout categorical_ideology ","
 
 use "`repo_root'/stata/rdhte_dataset.dta", clear
-rdhte y x, covs_hte(w_strength) kernel(uni) vce(hc2 cluster_var)
+rdhte y x, covs_hte(w_strength) kernel(uni) vce(cluster cluster_var) `precision_opt'
 write_rdhte_case jout continuous_strength ","
 
 use "`repo_root'/stata/rdhte_dataset.dta", clear
-rdhte y x, covs_hte(i.w_left##c.w_strength) h(0.1) vce(hc2 cluster_var)
+rdhte y x, covs_hte(i.w_left##c.w_strength) h(0.1) vce(cluster cluster_var) `precision_opt'
 write_rdhte_case jout interaction_strength ","
 
 use "`repo_root'/stata/rdhte_dataset.dta", clear
-rdhte y x, h(0.1) vce(hc3)
+rdhte y x, h(0.1) vce(hc3) `precision_opt'
 write_rdhte_case jout average_manual ","
 
 file write jout `"  }"' _n

@@ -12,12 +12,15 @@ rdbwhte(
   covs.hte = NULL,
   covs.eff = NULL,
   p = 1,
-  q = 2,
+  q = NULL,
   kernel = "tri",
+  weights = NULL,
   vce = "hc3",
   cluster = NULL,
   bwselect = "mserd",
-  bw.joint = FALSE
+  bw.joint = FALSE,
+  subset = NULL,
+  data = NULL
 )
 }
 \arguments{
@@ -33,11 +36,22 @@ rdbwhte(
 
 \item{p}{order of the local polynomial used to construct the point estimator (default = 1).}
 
-\item{q}{order of the local polynomial used to construct the bias correction  (default = 2).}
+\item{q}{order of the local polynomial used to construct the bias correction.
+If \code{NULL} (default), \code{q} is set to \code{p + 1}.}
 
 \item{kernel}{kernel function used to construct the RD estimators. Options are \code{triangular} (default option), \code{epanechnikov} and \code{uniform}.}
 
-\item{vce}{character string specifying the variance-covariance matrix estimator type (hc0–hc3) (default = "hc3").}
+\item{weights}{variable used for optional weighting of the bandwidth-selection procedure. The unit-specific weights multiply the kernel function.}
+
+\item{vce}{character string specifying the variance-covariance matrix
+estimator type. Without \code{cluster}: \code{"hc0"}, \code{"hc1"},
+\code{"hc2"}, \code{"hc3"} (default \code{"hc3"}). With
+\code{cluster}: \code{"cr1"} (default), \code{"cr2"}, \code{"cr3"}.
+Legacy aliases: \code{"hc0"}/\code{"hc1"} + \code{cluster} are
+remapped to \code{"cr1"} with a warning; \code{"hc2"} -> \code{"cr2"}
+and \code{"hc3"} -> \code{"cr3"} similarly. \code{"cr1"},
+\code{"cr2"}, \code{"cr3"} without \code{cluster} fall back to
+\code{"hc1"}, \code{"hc2"}, \code{"hc3"} with a warning.}
 
 \item{cluster}{variable indicating the clustering of observations.}
 
@@ -55,31 +69,47 @@ Options are:
 \code{cercomb2} for median(\code{certwo},\code{cerrd},\code{cersum}), for each side of the cutoff separately.
 Note: MSE = Mean Square Error; CER = Coverage Error Rate. Default is \code{bwselect=mserd}.}
 
-\item{bw.joint}{logical. If \code{TRUE}, forces all bandwidths to be the same across groups (default is \code{bw.joint = FALSE}).}
+\item{bw.joint}{logical. If \code{TRUE}, forces all bandwidths to be the same across groups (default is \code{bw.joint = FALSE}). When \code{covs.hte} is continuous (rather than a factor or 0/1 indicator), a single joint bandwidth is always used regardless of this argument.}
+
+\item{subset}{optional vector specifying a subset of observations to be used.}
+
+\item{data}{optional data frame. When supplied, \code{y}, \code{x}, \code{covs.hte}, \code{covs.eff}, \code{weights}, \code{cluster}, and \code{subset} may be given as bare variable names referring to columns of \code{data}.}
 }
 \value{
-A list with selected bandwidths and model information.
-\item{W.lev}{vector of group level identifiers.}
-\item{kernel}{kernel type used.}
-\item{vce}{variance estimator used.}
-\item{c}{cutoff value.}
-\item{h}{vector containing the bandwidths used.}
-\item{p}{order of the polynomial used for estimation.}
-\item{q}{order of the polynomial used for inference.}
-\item{N}{vector with the original number of observations for each group.}
-\item{Nh}{vector with the effective number of observations for each group.}
-\item{covs.cont}{internal value.}
-\item{rdmodel}{rd model.}
+A list with the following named elements:
+\item{W.lev}{Group-level identifiers, or \code{NULL} for continuous \code{covs.hte}.}
+\item{W.names}{Display labels for the rows of \code{h} (prefixed with the
+\code{covs.hte} expression for categorical \code{covs.hte}).}
+\item{covs.hte_chr}{Character representation of the \code{covs.hte} argument.}
+\item{kernel}{Kernel type used.}
+\item{vce}{Variance estimator display label.}
+\item{vce_select}{Canonical lowercase variance-estimator name.}
+\item{c}{Cutoff value.}
+\item{h}{An \code{n.lev x 2} matrix of left/right bandwidths, one row per group.}
+\item{p}{Order of the polynomial used for estimation.}
+\item{q}{Order of the polynomial used for bias correction.}
+\item{bwselect}{Bandwidth selection procedure used.}
+\item{N}{Length-2 vector \code{c(N_left, N_right)} of pre-bandwidth sample sizes.}
+\item{Nh}{An \code{n.lev x 2} matrix of effective sample sizes (per group, per side).}
+\item{covs.cont}{Logical; \code{TRUE} for continuous \code{covs.hte} (or no \code{covs.hte}), \code{FALSE} for factor.}
+\item{rdmodel}{Human-readable model description string.}
 }
 \description{
-\code{rdbwhte} computes MSE- and CER-optimal bandwidths for estimating
-RD heterogeneous treatment effects based on covariates.
+\code{rdbwhte} computes MSE- and CER-optimal bandwidths for
+estimating RD heterogeneous treatment effects based on covariates
+(Calonico, Cattaneo, Farrell, Palomba and Titiunik, 2025a).
 
 Companion commands: \code{\link{rdhte}} for RD HTE estimation and inference,
 and \code{\link{rdhte_lincom}} for testing linear restrictions of parameters.
 
-Related Stata and R packages useful for inference in RD designs are
-described in the website: \url{https://rdpackages.github.io/}.
+A detailed introduction to the software is given in Calonico, Cattaneo,
+Farrell, Palomba and Titiunik (2025b). Related software packages for
+analysis and interpretation of RD designs and related methods are available
+in: \url{https://rdpackages.github.io/}.
+
+For background methodology, see Calonico, Cattaneo, Farrell, and Titiunik
+(2019), Calonico, Cattaneo and Farrell (2020), and Cattaneo and Titiunik
+(2022).
 }
 \examples{
 set.seed(123)
@@ -89,11 +119,33 @@ W <- rbinom(n, 1, 0.5)
 Y <- 3 + 2*X + 1.5*X^2 + 0.5*X^3 + sin(2*X) + 3*W*(X>=0) + rnorm(n)
 rdbwhte.1 = rdbwhte(y=Y, x=X, covs.hte=factor(W))
 summary(rdbwhte.1)
+
+\dontrun{
+data(rdhte_dataset)
+with(rdhte_dataset, {
+  summary(rdbwhte(y = y, x = x, covs.hte = factor(w_ideology),
+                  cluster = cluster_var))
+  summary(rdbwhte(y = y, x = x, covs.hte = factor(w_ideology),
+                  cluster = cluster_var, bw.joint = TRUE))
+  summary(rdbwhte(y = y, x = x, covs.hte = w_strength,
+                  cluster = cluster_var))
+})
+}
 }
 \references{
-Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): rdhte: Learning Conditional Average Treatment Effects in RD Designs. \emph{Working paper}.
+Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): \href{https://arxiv.org/abs/2507.01128}{rdhte: Conditional Average Treatment Effects in RD Designs.} \emph{Working paper}.
 
-Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): Treatment Effect Heterogeneity in Regression Discontinuity Designs. \emph{Working paper}
+Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): \href{https://arxiv.org/abs/2503.13696}{Treatment Effect Heterogeneity in Regression Discontinuity Designs.} \emph{Working paper}.
+
+Cattaneo and Titiunik. 2022. \href{https://rdpackages.github.io/references/Cattaneo-Titiunik_2022_ARE.pdf}{Regression Discontinuity Designs.} \emph{Annual Review of Economics},  14: 821-851.
+
+Calonico, Cattaneo, and Farrell. 2020. \href{https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell_2020_ECTJ.pdf}{Optimal Bandwidth Choice for Robust Bias Corrected Inference in Regression Discontinuity Designs.} \emph{Econometrics Journal}, 23(2): 192-210.
+
+Calonico, Cattaneo, Farrell, and Titiunik. 2019. \href{https://rdpackages.github.io/references/Calonico-Cattaneo-Farrell-Titiunik_2019_RESTAT.pdf}{Regression Discontinuity Designs using Covariates.} \emph{Review of Economics and Statistics}, 101(3): 442-451.
+
+Calonico, Cattaneo, and Titiunik. 2014a. \href{https://rdpackages.github.io/references/Calonico-Cattaneo-Titiunik_2014_ECMA.pdf}{Robust Nonparametric Confidence Intervals for Regression-Discontinuity Designs.} \emph{Econometrica} 82(6): 2295-2326.
+
+Granzier, Pons, and Tricaud. 2023. \href{https://www.aeaweb.org/articles?id=10.1257/app.20210840}{Coordination and Bandwagon Effects: How Past Rankings Shape the Behavior of Voters and Candidates.} \emph{American Economic Journal: Applied Economics}, 15(4): 177-217.
 }
 \seealso{
 \code{\link{rdhte}}, \code{\link{rdhte_lincom}}
@@ -101,11 +153,11 @@ Calonico, Cattaneo, Farrell, Palomba and Titiunik (2025): Treatment Effect Heter
 \author{
 Sebastian Calonico, University of California, Davis \email{scalonico@ucdavis.edu}.
 
-Matias D. Cattaneo, Princeton University  \email{cattaneo@princeton.edu}.
+Matias D. Cattaneo, Princeton University  \email{matias.d.cattaneo@gmail.com}.
 
-Max H. Farrell, University of California, Santa Barbara \email{maxhfarrell@ucsb.edu}.
+Max H. Farrell, University of California, Santa Barbara \email{mhfarrell@gmail.com}.
 
-Filippo Palomba, Princeton University \email{fpalomba@princeton.edu}.
+Filippo Palomba, Princeton University \email{filippo.palomba19@gmail.com}.
 
-Rocio Titiunik, Princeton University \email{titiunik@princeton.edu}.
+Rocio Titiunik, Princeton University \email{rocio.titiunik@gmail.com}.
 }

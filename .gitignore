@@ -22,6 +22,8 @@ AGENTS.md
 
 # Keep only the Python package subtree public under Python/.
 /Python/*
+!/Python/rdhte_illustration.py
+!/Python/rdhte_dataset.csv
 !/Python/rdhte/
 !/Python/rdhte/**
 
@@ -94,3 +96,13 @@ dist/
 *.bak
 *.swp
 *~
+
+# Illustration-generated outputs
+/stata/rdhte_table_A.tex
+/Python/example_plot.png
+/Python/rdhte_table_A.tex
+/Python/rdhte/docs/*.png
+/Python/rdhte/docs/*.pdf
+/Python/rdhte/tests/*.png
+/Rplots.pdf
+/rdhte_table_A.tex

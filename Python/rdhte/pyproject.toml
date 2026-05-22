@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rdhte"
+version = "0.1.0"
+description = "Heterogeneous treatment effects in regression discontinuity designs."
+readme = "README.md"
+license = "GPL-3.0-only"
+requires-python = ">=3.10"
+authors = [
+  { name = "Sebastian Calonico", email = "scalonico@ucdavis.edu" },
+  { name = "Matias D. Cattaneo", email = "matias.d.cattaneo@gmail.com" },
+  { name = "Max H. Farrell",    email = "mhfarrell@gmail.com" },
+  { name = "Filippo Palomba",   email = "filippo.palomba19@gmail.com" },
+  { name = "Rocio Titiunik",    email = "rocio.titiunik@gmail.com" },
+]
+keywords = ["regression discontinuity", "treatment effects", "heterogeneity", "robust bias correction"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+  "numpy>=1.22",
+  "scipy>=1.8",
+  "pandas>=1.4",
+  "statsmodels>=0.14",
+  "rdrobust>=2.0.0",
+]
+
+[project.optional-dependencies]
+plot = ["plotnine>=0.12", "matplotlib>=3.5"]
+test = ["pytest>=7"]
+dev  = ["ruff", "black", "pytest>=7", "plotnine>=0.12"]
+
+[project.urls]
+Homepage      = "https://rdpackages.github.io/rdhte"
+Documentation = "https://rdpackages.github.io/rdhte"
+Source        = "https://github.com/rdpackages/rdhte"
+"Bug Tracker" = "https://github.com/rdpackages/rdhte/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# Numerical code deliberately uses compact multi-statement lines
+# ("a = b; c = d") that mirror the R source. Keep the real issues on.
+ignore = ["E701", "E702"]

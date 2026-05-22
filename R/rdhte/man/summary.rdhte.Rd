@@ -2,17 +2,20 @@
 % Please edit documentation in R/rdhte.R
 \name{summary.rdhte}
 \alias{summary.rdhte}
-\title{Internal function.}
+\title{Summary method for \code{rdhte} objects.}
 \usage{
 \method{summary}{rdhte}(object, ...)
 }
 \arguments{
-\item{object}{Class \code{rdhte} objects.}
+\item{object}{Class \code{rdhte} object returned by \code{\link{rdhte}}.}
+
+\item{...}{ignored.}
 }
 \value{
-No return value, called for side effects.
+An S3 object inheriting from \code{rdhte} with class
+\code{summary.rdhte}; printed by \code{print.summary.rdhte}.
 }
 \description{
-Internal function.
+Summary method for \code{rdhte} objects.
 }
 \keyword{internal}

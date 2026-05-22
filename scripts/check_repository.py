@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import configparser
 import re
 import sys
 from pathlib import Path
@@ -36,6 +35,7 @@ def check_required_layout() -> None:
         "R/rdhte/NAMESPACE",
         "R/rdhte_illustration.R",
         "R/rdhte_dataset.csv",
+        "R/rdhte/data/rdhte_dataset.rda",
         "stata/stata.toc",
         "stata/rdhte.pkg",
         "scripts/build-stata-help-pdfs.py",
@@ -45,23 +45,25 @@ def check_required_layout() -> None:
         require_path(relative_path)
 
 
+def read_pyproject_string(pyproject: str, key: str) -> str:
+    match = re.search(rf"^{re.escape(key)}\s*=\s*\"([^\"]+)\"\s*$", pyproject, re.MULTILINE)
+    if not match:
+        fail(f"Python/rdhte/pyproject.toml is missing project {key!r}.")
+    return match.group(1).strip()
+
+
 def check_python_metadata() -> str | None:
     pyproject = ROOT / "Python" / "rdhte" / "pyproject.toml"
-    setup_cfg = ROOT / "Python" / "rdhte" / "setup.cfg"
-    if not pyproject.exists() and not setup_cfg.exists():
+    if not pyproject.exists():
         return None
 
     require_path("Python/rdhte/pyproject.toml")
-    require_path("Python/rdhte/setup.cfg")
+    require_path("Python/rdhte/src/rdhte/__init__.py")
+    require_path("Python/rdhte/tests")
 
-    config = configparser.ConfigParser()
-    config.read(setup_cfg, encoding="utf-8")
-
-    if "metadata" not in config:
-        fail("Python/rdhte/setup.cfg is missing [metadata].")
-
-    name = config["metadata"].get("name", "").strip()
-    version = config["metadata"].get("version", "").strip()
+    pyproject_text = pyproject.read_text(encoding="utf-8")
+    name = read_pyproject_string(pyproject_text, "name")
+    version = read_pyproject_string(pyproject_text, "version")
 
     if name != "rdhte":
         fail(f"Unexpected Python package name: {name!r}")
