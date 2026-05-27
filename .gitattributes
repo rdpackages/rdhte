@@ -1,12 +1,10 @@
 .editorconfig text eol=lf
 .gitattributes text eol=lf
-.gitignore text eol=lf
 CONTRIBUTING.md text eol=lf
 README.md text eol=lf
 
 .github/** text eol=lf
 docs/** text eol=lf
-scripts/** text eol=lf
 
 *.bat text eol=crlf
 *.cmd text eol=crlf
@@ -14,6 +12,7 @@ scripts/** text eol=lf
 
 *.dta binary
 *.docx binary
+*.mlib binary
 *.mo binary
 *.pdf binary
 *.rda binary

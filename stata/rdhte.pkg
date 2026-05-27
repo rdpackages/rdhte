@@ -7,7 +7,7 @@ d          Max H. Farrell, Department of Economics, University of California, Sa
 d          Filippo Palomba, Department of Economics, Princeton University, filippo.palomba19@gmail.com
 d          Rocio Titiunik, Department of Politics, Princeton University, rocio.titiunik@gmail.com
 d
-d Distribution-Date: 20260522
+d Distribution-Date: 20260527
 d
 f rdhte.ado
 f rdbwhte.ado
@@ -16,10 +16,10 @@ f rdhte_fvexpand.ado
 f rdhte_countvars.ado
 f rdhte_fill_Nh.ado
 f rdhte_plot.ado
+f lrdhte.mlib
 f rdhte.sthlp
 f rdbwhte.sthlp
 f rdhte_lincom.sthlp
 f rdhte_plot.sthlp
 f rdhte_illustration.do
 f rdhte_dataset.dta
-

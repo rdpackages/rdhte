@@ -60,6 +60,10 @@
 - Tightened the PyPI publishing workflow by separating distribution build from
   the OIDC-powered publish job and binding publication to the `pypi`
   environment.
+- Switched Stata package distribution to a single `lrdhte.mlib` Mata library
+  and updated local Stata maintenance tooling to use Stata 16 by default.
+- Marked repository maintenance scripts, local ignore rules, and package test
+  folders as local-only working material.
 
 ## Modernization Summary: May 22, 2026
 
