@@ -1,6 +1,7 @@
 ************************************************************************************************
 * RDHTE STATA PACKAGE -- rdhte
 * Authors: Sebastian Calonico, Matias D. Cattaneo, Max Farrell, Filippo Palomba, Rocio Tititunik
+*! version 0.2.0 22may2026
 *
 * 2026-05-14: M4 clarity (hash counting comments), vce-mapping consolidation
 *             (single canonical-name -> (display, regress, rdbw) lookup),
@@ -26,8 +27,6 @@
 *             (N-1)/(N-K) df correction). The cr0-without-cluster
 *             fallback also remapped from hc0 to hc1.
 ************************************************************************************************
-*!version 0.2.0  2026-05-22
-
 capture program drop rdhte
 program define rdhte, eclass
     version 16.0
