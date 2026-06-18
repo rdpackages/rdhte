@@ -1,7 +1,7 @@
 ************************************************************************************************
 * RDHTE STATA PACKAGE -- rdhte
 * Authors: Sebastian Calonico, Matias D. Cattaneo, Max Farrell, Filippo Palomba, Rocio Tititunik
-*! version 0.2.0 22may2026
+*! version 0.2.1 18jun2026
 *
 * 2026-05-14: M4 clarity (hash counting comments), vce-mapping consolidation
 *             (single canonical-name -> (display, regress, rdbw) lookup),
@@ -34,8 +34,8 @@ program define rdhte, eclass
 
 
     * Verify rdrobust is installed (anywhere on the adopath -- not just
-    * sysdir_plus) and at version 11 or later. Uses findfile + a regex
-    * scan of the *! version stamp rather than assuming a fixed line layout.
+    * sysdir_plus) and at version 11 or later. Parse only the Stata version
+    * stamp; later comments can contain backtick quotes.
     *
     capture findfile rdrobust.ado
     if _rc {
@@ -51,9 +51,13 @@ program define rdhte, eclass
     local rd_major = .
     file read `fh' line
     while r(eof) == 0 & "`rdversion'" == "" {
-        if regexm(`"`macval(line)'"', "^\*!.*v([0-9]+)\.([0-9]+)\.([0-9]+)") {
-            local rdversion = regexs(0)
-            local rd_major = real(regexs(1))
+        local _rdline = strltrim(`"`macval(line)'"')
+        if substr(`"`_rdline'"', 1, 2) == "*!" {
+            if regexm(`"`_rdline'"', "^\*![^0-9]*([0-9]+)\.([0-9]+)\.([0-9]+)") {
+                local rdversion = regexs(0)
+                local rd_major = real(regexs(1))
+            }
+            continue, break
         }
         file read `fh' line
     }

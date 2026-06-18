@@ -2,6 +2,8 @@
 
 ## In Progress: May 22, 2026
 
+- Fixed a Stata `rdhte` startup error (`too few quotes`, r(132)) caused by
+  parsing the current `rdrobust` version stamp past later quoted comments.
 - Began audit of the 0.2.0 R/Stata update and new Python package.
 - Updated repository checks and numerical-baseline tooling for the new
   R vignette/data layout and pyproject-based Python package.
