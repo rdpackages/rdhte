@@ -1,5 +1,5 @@
 {smcl}
-{* *!version 0.2.0 2026-05-22}{...}
+{* *!version 0.2.1 2026-06-18}{...}
 {viewerjumpto "Syntax" "rdhte##syntax"}{...}
 {viewerjumpto "Description" "rdhte##description"}{...}
 {viewerjumpto "Options" "rdhte##options"}{...}
